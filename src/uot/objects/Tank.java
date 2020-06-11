@@ -32,17 +32,17 @@ public class Tank extends RectangularObject {
 
 
     public Bullet shoot(int x, int y){
-
+        return new Bullet(getX(), getY(), x, y);
     }
 
 
-    public void bounce(){
-        //tutaj by trzeba chyba inaczej ruchy liczyc, w sensie zrobic enum Direction
-        if (prev_dx != 0){
-            dx = -BOUNCE_MODIFIER * dx;
-        }
-
-    }
+//    public void bounce(){
+//        //tutaj by trzeba chyba inaczej ruchy liczyc, w sensie zrobic enum Direction
+//        if (prev_dx != 0){
+//            dx = -BOUNCE_MODIFIER * dx;
+//        }
+//
+//    }
     // to albo bounce
     public boolean willCollide(RectangularObject other){
         return new Tank.Builder(getX()+dx, getY() + dy, getWidth(), getHeight()).build().collision(other);
@@ -91,7 +91,7 @@ public class Tank extends RectangularObject {
 
     public double hit(Bullet bullet){
         // if my bullet => nothing()?
-        return health -= bullet.getDmg();
+        return healthLeft -= bullet.getDmg();
     }
 
     public static class Builder{

@@ -4,7 +4,6 @@ import uot.objects.*;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.activation.ActivationInstantiator;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -40,7 +39,7 @@ public class Game {
         terrain.add(new Terrain(0,0, boardWidth, WALL_WIDTH));                               // upper
         terrain.add(new Terrain(0,0, WALL_WIDTH, boardLength));                              // left
         terrain.add(new Terrain(boardWidth - WALL_WIDTH,0, WALL_WIDTH, boardLength));        // right
-        terrain.add(new Terrain(0, boardLength - WALL_WIDTH, boardWidth, WALL_WIDTH))        // bottom
+        terrain.add(new Terrain(0, boardLength - WALL_WIDTH, boardWidth, WALL_WIDTH));       // bottom
     }
 
 
@@ -53,20 +52,20 @@ public class Game {
                 // bullets <-> players collisions
                 if (player1.collision(bullet)) {
                     player1.hit(bullet);
-                    bullets.remove(bullet)
+                    bullets.remove(bullet);
                 }
-                if (player2.collision(bullet){
+                if (player2.collision(bullet)){
                     player2.hit(bullet);
                     bullets.remove(bullet);
                 }
                 // bullets <-> terrain collisions
                 for (Terrain block: terrain){
-                    if (bullet.collision(terrain)){
+                    if (bullet.collision(block)){
                         bullets.remove(bullet);
                     }
                 }
             }
-            // players <-> terrain collisions
+            // players <-> terrain collisions (prevent them beforehand)
             boolean p1_collision = terrain.stream().anyMatch(t -> player1.willCollide(t));
             boolean p2_collision = terrain.stream().anyMatch(t -> player2.willCollide(t));
             // players <-> players collisions
