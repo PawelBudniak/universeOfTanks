@@ -20,7 +20,7 @@ public class Tank extends RectangularObject {
     private double healthLeft;
 
     public double hit(Bullet bullet){
-        return health -= bullet.getDmg();
+        return healthLeft -= bullet.getDmg();
     }
 
     public static class Builder{

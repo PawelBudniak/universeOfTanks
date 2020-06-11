@@ -7,13 +7,17 @@ public class Bullet extends RectangularObject{
     public static final Color DEFAULT_COLOR = Color.red;
     private static final int width = 5;
     private static final int height = 5;
+    private static final int speed = 5;
+
+    private double exactX;
+    private double exactY;
 
     public void setxDirection(int x,int y) {
-        this.xDirection = 5*Math.cos(-(Math.atan2(x-this.getX(),y-this.getY()))+Math.PI/2 );
+        this.xDirection = speed*Math.cos(-(Math.atan2(x-this.getX(),y-this.getY()))+Math.PI/2 );
     }
 
     public void setyDirection(int x, int y) {
-        this.yDirection = 5*Math.sin(-(Math.atan2(x-this.getX(),y-this.getY()))+Math.PI/2);
+        this.yDirection = speed*Math.sin(-(Math.atan2(x-this.getX(),y-this.getY()))+Math.PI/2);
     }
 
     private double xDirection;
@@ -24,6 +28,8 @@ public class Bullet extends RectangularObject{
         this.rectangle = new Rectangle(startX,startY,width, height);
         setxDirection(targetX,targetY);
         setyDirection(targetX,targetY);
+        exactX = startX;
+        exactY = startY;
     }
 
     public double getDmg()
@@ -33,10 +39,10 @@ public class Bullet extends RectangularObject{
 
     public void move()
     {
-        int x = this.getX() + (int) xDirection;
-        int y = this.getY() + (int) yDirection;
+        exactX +=  xDirection;
+        exactY +=  yDirection;
 
-        rectangle.setLocation(x,y);
+        rectangle.setLocation((int)exactX,(int)exactY);
     }
 
 
