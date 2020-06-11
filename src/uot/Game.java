@@ -23,6 +23,7 @@ public class Game {
     LinkedList<Bullet> bullets;
     Player player1;
     Player player2;
+    Display display;
 
 
     public Game(int boardLength, int boardWidth, String p1_nick, String p2_nick){
@@ -35,7 +36,7 @@ public class Game {
         generateWalls();
         generateTerrain();
         gameClock = new Timer(TICK, new GameClock());
-
+        this.display = new Display();
     }
 
 
@@ -90,12 +91,16 @@ public class Game {
             boolean p1_collision = terrain.stream().anyMatch(t -> player1.willCollide(t));
             boolean p2_collision = terrain.stream().anyMatch(t -> player2.willCollide(t));
             // players <-> players collisions
+
             // bullets <-> bullets collisions?
             if (!p1_collision)
                 player1.move();
             if (!p2_collision)
                 player2.move();
         }
+    }
+    private class Display extends JPanel{
+
     }
 
 
