@@ -2,12 +2,19 @@ package uot;
 
 import uot.objects.*;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.Random;
 
 public class Game {
+    private static final int TICK = 20;
+    private static final int TANK_LEN = 15;
+    private static final int TANK_WID = 20;
+    private static final int START_X = 80;
+    private static final Color P1_COLOR = Color.GREEN;
+    private static final Color P2_COLOR = Color.BLUE;
     public static final int N_TERRAIN_BLOCKS = 8;
     private int boardLength;
     private int boardWidth;
@@ -18,9 +25,23 @@ public class Game {
     Player player2;
 
 
+    public Game(int boardLength, int boardWidth, String p1_nick, String p2_nick){
+        this.boardWidth = boardWidth;
+        this.boardLength = boardLength;
+        this.player1 = new Player(p1_nick,
+                new Tank.Builder(START_X, boardLength/2, TANK_WID, TANK_LEN).color(P1_COLOR).build());
+        this.player2 = new Player(p2_nick,
+                new Tank.Builder(boardLength - START_X, boardLength/2, TANK_WID, TANK_LEN).color(P2_COLOR).build());
+        generateWalls();
+        generateTerrain();
+        gameClock = new Timer(TICK, new GameClock());
+
+    }
+
 
 
     /** generate terrain in the middle of the board */
+    // prevent terrain collisions?
     private void generateTerrain(){
         Random random = new Random();
         for (int i = 0; i < N_TERRAIN_BLOCKS; i++) {
@@ -44,7 +65,7 @@ public class Game {
 
 
 
-    private class Tick implements ActionListener{
+    private class GameClock implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
