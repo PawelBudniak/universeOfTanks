@@ -15,9 +15,10 @@ public class Tank extends RectangularObject {
     public static final int DEFAULT_AMMO_CAPACITY = 5;
     public static final Color DEFAULT_COLOR = Color.blue;
 
-    private static final int BOUNCE_MODIFIER = 2;
-    private static final int SPEED = 1;
-    private static final int SPEED_CAP = 6;
+    private static final double BOUNCE_MODIFIER = 2.5;
+    private static final double SPEED = 0.4;
+    private static final double SPEED_CAP = 6.0;
+    private static final double FRICTION = 0.95;
 
     /** tank parameters */
     private final double maxHealth;
@@ -29,12 +30,14 @@ public class Tank extends RectangularObject {
     private int ammoLeft;
     private double healthLeft;
     // will be initialized to 0 by default
-    private int ax;         // x direction acceleration
-    private int ay;         // y direction acceleration
+    private double ax;      // x direction acceleration
+    private double ay;      // y direction acceleration
+    private double actual_dx;
+    private double actual_dy;
     private int dy;         // change in the y direction each tick -- is set with each key press
     private int dx;         // change in the x direction each tick -- is set with each key press
-    private int prev_dx;    // previous change in the y direction -- is set each tick
-    private int prev_dy;    // previous change in the y direction -- is set each tick
+    private double prev_dx;    // previous change in the y direction -- is set each tick
+    private double prev_dy;    // previous change in the y direction -- is set each tick
     private Timer reloadTimer;
     // (to nie jest dobry pomysl jak cos, blokuje sie w bounce'ach co sekunde xD)
     private Timer bounceTimer;  // disable moving commands in the opposite direction for BOUNCE_TIME after bouncing
@@ -62,14 +65,16 @@ public class Tank extends RectangularObject {
         bouncingX = true;
         bouncingY = true;
         bounceTimer.restart();
-        if (dx > 0)
-            dx = -Math.min(BOUNCE_MODIFIER * prev_dx, SPEED_CAP);
-        else
-            dx = -Math.max(BOUNCE_MODIFIER * prev_dx, -SPEED_CAP);
-        if (dy > 0)
-            dy = -Math.min(BOUNCE_MODIFIER * prev_dy, SPEED_CAP);
-        else
-            dy = -Math.max(BOUNCE_MODIFIER * prev_dy, -SPEED_CAP);
+        actual_dx = -BOUNCE_MODIFIER * prev_dx;
+        actual_dy = -BOUNCE_MODIFIER * prev_dy;
+//        if (dx > 0)
+//            dx = -Math.min(BOUNCE_MODIFIER * prev_dx, SPEED_CAP);
+//        else
+//            dx = -Math.max(BOUNCE_MODIFIER * prev_dx, -SPEED_CAP);
+//        if (dy > 0)
+//            dy = -Math.min(BOUNCE_MODIFIER * prev_dy, SPEED_CAP);
+//        else
+//            dy = -Math.max(BOUNCE_MODIFIER * prev_dy, -SPEED_CAP);
     }
     // to albo bounce
     public boolean willCollide(RectangularObject other){
@@ -77,20 +82,25 @@ public class Tank extends RectangularObject {
     }
 
     public void move(){
-        dx += ax;
-        dy += ay;
+        actual_dx += ax;
+        actual_dy += ay;
         if (dx > 0)
-            dx = Math.min(dx, SPEED_CAP);
+            actual_dx = Math.min(actual_dx, SPEED_CAP);
         else
-            dx = Math.max(dx, -SPEED_CAP);
+            actual_dx = Math.max(actual_dx, -SPEED_CAP);
         if (dy > 0)
-            dy = Math.min(dy, SPEED_CAP);
+            actual_dy = Math.min(actual_dy, SPEED_CAP);
         else
-            dy = Math.max(dy, -SPEED_CAP);
+            actual_dy = Math.max(actual_dy, -SPEED_CAP);
 
-        prev_dx = dx;
-        prev_dy = dy;
+        actual_dx = FRICTION * actual_dx;
+        actual_dy = FRICTION * actual_dy;
 
+        prev_dx = actual_dx;
+        prev_dy = actual_dy;
+
+        dx = (int)actual_dx;
+        dy = (int)actual_dy;
 
         setX(getX() + dx);
         setY(getY() + dy);
