@@ -16,7 +16,7 @@ public class Tank extends RectangularObject {
     public static final Color DEFAULT_COLOR = Color.blue;
 
     private static final int BOUNCE_MODIFIER = 2;
-    private static final int SPEED = 2;
+    private static final int SPEED = 1;
     private static final int SPEED_CAP = 6;
 
     /** tank parameters */
@@ -29,6 +29,8 @@ public class Tank extends RectangularObject {
     private int ammoLeft;
     private double healthLeft;
     // will be initialized to 0 by default
+    private int ax;         // x direction acceleration
+    private int ay;         // y direction acceleration
     private int dy;         // change in the y direction each tick -- is set with each key press
     private int dx;         // change in the x direction each tick -- is set with each key press
     private int prev_dx;    // previous change in the y direction -- is set each tick
@@ -36,7 +38,7 @@ public class Tank extends RectangularObject {
     private Timer reloadTimer;
     // (to nie jest dobry pomysl jak cos, blokuje sie w bounce'ach co sekunde xD)
     private Timer bounceTimer;  // disable moving commands in the opposite direction for BOUNCE_TIME after bouncing
-    private static int BOUNCE_TIME = 120;
+    private static int BOUNCE_TIME = 50;
     private boolean bouncingX = false;
     private boolean bouncingY = false;
 
@@ -63,11 +65,11 @@ public class Tank extends RectangularObject {
         if (dx > 0)
             dx = -Math.min(BOUNCE_MODIFIER * prev_dx, SPEED_CAP);
         else
-            dx = -Math.max(BOUNCE_MODIFIER * dx, -SPEED_CAP);
+            dx = -Math.max(BOUNCE_MODIFIER * prev_dx, -SPEED_CAP);
         if (dy > 0)
             dy = -Math.min(BOUNCE_MODIFIER * prev_dy, SPEED_CAP);
         else
-            dy = -Math.max(BOUNCE_MODIFIER * dy, -SPEED_CAP);
+            dy = -Math.max(BOUNCE_MODIFIER * prev_dy, -SPEED_CAP);
     }
     // to albo bounce
     public boolean willCollide(RectangularObject other){
@@ -75,9 +77,22 @@ public class Tank extends RectangularObject {
     }
 
     public void move(){
+        dx += ax;
+        dy += ay;
+        if (dx > 0)
+            dx = Math.min(dx, SPEED_CAP);
+        else
+            dx = Math.max(dx, -SPEED_CAP);
+        if (dy > 0)
+            dy = Math.min(dy, SPEED_CAP);
+        else
+            dy = Math.max(dy, -SPEED_CAP);
+
         prev_dx = dx;
-        setX(getX() + dx);
         prev_dy = dy;
+
+
+        setX(getX() + dx);
         setY(getY() + dy);
     }
     public void keyPressed(KeyEvent e){
@@ -85,16 +100,16 @@ public class Tank extends RectangularObject {
         int code = e.getKeyCode();
         switch(code){
             case KeyEvent.VK_W:
-                dy = -SPEED;
+                ay = -SPEED;
                 break;
             case KeyEvent.VK_A:
-                dx = -SPEED;
+                ax = -SPEED;
                 break;
             case KeyEvent.VK_D:
-                dx = SPEED;
+                ax = SPEED;
                 break;
             case KeyEvent.VK_S:
-                dy = SPEED;
+                ay = SPEED;
                 break;
         }
     }
@@ -104,11 +119,11 @@ public class Tank extends RectangularObject {
         switch(code){
             case KeyEvent.VK_W:
             case KeyEvent.VK_S:
-                dy = 0;
+                ay = 0;
                 break;
             case KeyEvent.VK_A:
             case KeyEvent.VK_D:
-                dx = 0;
+                ax = 0;
                 break;
         }
     }
