@@ -18,7 +18,7 @@ public class Tank extends RectangularObject {
     private static final double BOUNCE_MODIFIER = 2.5;
     private static final double SPEED = 0.4;
     private static final double SPEED_CAP = 6.0;
-    private static final double FRICTION = 0.95;
+    private static final double FRICTION = 0.97;
 
     /** tank parameters */
     private final double maxHealth;
@@ -30,20 +30,19 @@ public class Tank extends RectangularObject {
     private int ammoLeft;
     private double healthLeft;
     // will be initialized to 0 by default
-    private double ax;      // x direction acceleration
-    private double ay;      // y direction acceleration
-    private double actual_dx;
-    private double actual_dy;
-    private int dy;         // change in the y direction each tick -- is set with each key press
-    private int dx;         // change in the x direction each tick -- is set with each key press
-    private double prev_dx;    // previous change in the y direction -- is set each tick
-    private double prev_dy;    // previous change in the y direction -- is set each tick
+    private double ax;          // x direction acceleration
+    private double ay;          // y direction acceleration
+    private double actual_dx;   // approximate change in the y direction each tick -- is set with each key press
+    private double actual_dy;   // approximate change in the x direction each tick -- is set with each key press
+    private double prev_dx;     // previous change in the y direction -- is set each tick
+    private double prev_dy;     // previous change in the y direction -- is set each tick
+    private double prev_x;
+    private double prev_y;
     private Timer reloadTimer;
-    // (to nie jest dobry pomysl jak cos, blokuje sie w bounce'ach co sekunde xD)
-    private Timer bounceTimer;  // disable moving commands in the opposite direction for BOUNCE_TIME after bouncing
-    private static int BOUNCE_TIME = 50;
-    private boolean bouncingX = false;
-    private boolean bouncingY = false;
+    private boolean a_pressed;
+    private boolean w_pressed;
+    private boolean d_pressed;
+    private boolean s_pressed;
 
     public Bullet shoot(int x, int y){
         if (ammoLeft > 0) {
@@ -61,79 +60,120 @@ public class Tank extends RectangularObject {
         return b.getOrigin() == this;
     }
     // experymentalne
-    public void bounce() {
-        bouncingX = true;
-        bouncingY = true;
-        bounceTimer.restart();
-        actual_dx = -BOUNCE_MODIFIER * prev_dx;
-        actual_dy = -BOUNCE_MODIFIER * prev_dy;
-//        if (dx > 0)
-//            dx = -Math.min(BOUNCE_MODIFIER * prev_dx, SPEED_CAP);
-//        else
-//            dx = -Math.max(BOUNCE_MODIFIER * prev_dx, -SPEED_CAP);
-//        if (dy > 0)
-//            dy = -Math.min(BOUNCE_MODIFIER * prev_dy, SPEED_CAP);
-//        else
-//            dy = -Math.max(BOUNCE_MODIFIER * prev_dy, -SPEED_CAP);
+    public void bounce(RectangularObject from) {
+
+        // yellow
+        if (from.getX() < getX() + getWidth() && prev_x + getWidth()<= from.getX()) {
+            actual_dx = -BOUNCE_MODIFIER * prev_dx;
+        }
+        // red
+         else if (from.getX() + from.getWidth() > getX() && prev_x >= from.getWidth() + from.getX()){
+                actual_dx = -BOUNCE_MODIFIER * prev_dx;
+        }
+        // blue
+         else if (from.getY() < getY() + getHeight() && prev_y + getHeight() <= from.getY()) {
+            actual_dy = -BOUNCE_MODIFIER * prev_dy;
+        }
+        // purple
+         else if (from.getY() + from.getHeight() > getY() && prev_y >= from.getY() + from.getHeight() ) {
+                actual_dy = -BOUNCE_MODIFIER * prev_dy;
+        }
+//         else{
+//             actual_dx = -BOUNCE_MODIFIER * prev_dx;
+//             actual_dy = -BOUNCE_MODIFIER * prev_dy;
+//        }
+
     }
     // to albo bounce
     public boolean willCollide(RectangularObject other){
-        return new Tank.Builder(getX()+dx, getY() + dy, getWidth(), getHeight()).build().collision(other);
+        return new Tank.Builder(getX()+(int)getNextDx(), getY() + (int)getNextDy(), getWidth(), getHeight()).build().collision(other);
+    }
+
+    private double getNextDx(){
+        double next_dx = actual_dx;
+        next_dx += ax;
+        if (next_dx > 0)
+            next_dx = Math.min(next_dx, SPEED_CAP);
+        else
+            next_dx = Math.max(next_dx, -SPEED_CAP);
+        next_dx = FRICTION * next_dx;
+        return next_dx;
+
+    }
+    private double getNextDy(){
+        double next_dy = actual_dy;
+        next_dy += ay;
+        if (next_dy > 0)
+            next_dy = Math.min(next_dy, SPEED_CAP);
+        else
+            next_dy = Math.max(next_dy, -SPEED_CAP);
+        next_dy = FRICTION * next_dy;
+        return next_dy;
     }
 
     public void move(){
-        actual_dx += ax;
-        actual_dy += ay;
-        if (dx > 0)
-            actual_dx = Math.min(actual_dx, SPEED_CAP);
-        else
-            actual_dx = Math.max(actual_dx, -SPEED_CAP);
-        if (dy > 0)
-            actual_dy = Math.min(actual_dy, SPEED_CAP);
-        else
-            actual_dy = Math.max(actual_dy, -SPEED_CAP);
-
-        actual_dx = FRICTION * actual_dx;
-        actual_dy = FRICTION * actual_dy;
 
         prev_dx = actual_dx;
         prev_dy = actual_dy;
 
-        dx = (int)actual_dx;
-        dy = (int)actual_dy;
+        if (a_pressed && !d_pressed)
+            ax = -SPEED;
+        else if (d_pressed)
+            ax = SPEED;
+        else
+            ax = 0;
+        if (s_pressed && !w_pressed)
+            ay = SPEED;
+        else if(w_pressed)
+            ay = -SPEED;
+        else
+            ay = 0;
+
+        actual_dx = getNextDx();
+        actual_dy = getNextDy();
+
+        prev_x = getX();
+        prev_y = getY();
+
+        int dx = (int)actual_dx;
+        int dy = (int)actual_dy;
 
         setX(getX() + dx);
         setY(getY() + dy);
     }
     public void keyPressed(KeyEvent e){
-        if (bouncingX || bouncingY) return;
         int code = e.getKeyCode();
         switch(code){
             case KeyEvent.VK_W:
+                w_pressed = true;
                 ay = -SPEED;
                 break;
             case KeyEvent.VK_A:
-                ax = -SPEED;
+                a_pressed = true;
                 break;
             case KeyEvent.VK_D:
-                ax = SPEED;
+                d_pressed = true;
                 break;
             case KeyEvent.VK_S:
+                s_pressed = true;
                 ay = SPEED;
                 break;
         }
     }
     public void  keyReleased(KeyEvent e){
-        if (bouncingX || bouncingY) return;
         int code = e.getKeyCode();
         switch(code){
             case KeyEvent.VK_W:
+                w_pressed = false;
+                break;
             case KeyEvent.VK_S:
-                ay = 0;
+                s_pressed = false;
                 break;
             case KeyEvent.VK_A:
+                a_pressed = false;
+                break;
             case KeyEvent.VK_D:
-                ax = 0;
+                d_pressed = false;
                 break;
         }
     }
@@ -196,13 +236,7 @@ public class Tank extends RectangularObject {
         ammoLeft = builder.ammoCapacity;
         healthLeft = builder.maxHealth;
         reloadTimer = new Timer(builder.reloadTime, (actionEvent) -> ammoLeft = ammoCapacity );
-        bounceTimer = new Timer(BOUNCE_TIME,        (actionEvent) ->{
-            bouncingX = false;
-            bouncingY = false;
-        });
         reloadTimer.start();
-        bounceTimer.start();
-
     }
 
     public double getMaxHealth() {
@@ -236,8 +270,6 @@ public class Tank extends RectangularObject {
         return "Tank{" +
                 "ammoLeft=" + ammoLeft +
                 ", healthLeft=" + healthLeft +
-                ", dy=" + dy +
-                ", dx=" + dx +
                 ", prev_dx=" + prev_dx +
                 ", prev_dy=" + prev_dy +
                 ", rectangle=" + rectangle +

@@ -43,7 +43,8 @@ public class Player {
     public void keyPressed(KeyEvent e) { tank.keyPressed(e); }
     public void keyReleased(KeyEvent e) { tank.keyReleased(e); }
     public boolean willCollide(Player other) { return tank.willCollide(other.tank); }
-    public void bounce() { tank.bounce(); }
+    public void bounce(RectangularObject from) { tank.bounce(from); }
+    public void bounce(Player from) { tank.bounce(from.getTank()); }
     public Color getColor() { return tank.getColor(); }
     public int getX() { return tank.getX(); }
     public int getY() { return tank.getY(); }

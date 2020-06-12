@@ -67,7 +67,7 @@ public class Game {
     /** generate the walls at the edges of the board */
     private void generateWalls(){
         // najpierw dam 5 px szerokosci pozniej mozna zminiejszyc /zwiekszyc
-        final int WALL_WIDTH = 5;
+        final int WALL_WIDTH = 10;
         terrain.add(new Terrain(0,0, boardWidth, WALL_WIDTH));                               // upper
         terrain.add(new Terrain(0,0, WALL_WIDTH, boardLength));                              // left
         terrain.add(new Terrain(boardWidth - WALL_WIDTH,0, WALL_WIDTH, boardLength));        // right
@@ -126,13 +126,29 @@ public class Game {
             display.repaint();
         }
         /** wersja z odbijaniem */
+//        private void bouncePlayerCollisions(){
+//            for (int i = 0; i < players.length;  ++i) {
+//                Player player = players[i];
+//                boolean collision = terrain.stream().anyMatch(t -> player.collision(t));
+//                collision = collision || player.collision(players[(i + 1) % 2]);
+//                if (collision)
+//                    player.bounce();
+//                player.move();
+//            }
+//        }
         private void bouncePlayerCollisions(){
             for (int i = 0; i < players.length;  ++i) {
                 Player player = players[i];
-                boolean collision = terrain.stream().anyMatch(t -> player.collision(t));
-                collision = collision || player.collision(players[(i + 1) % 2]);
+                for (Terrain block: terrain){
+                    if (player.collision(block)) {
+                        player.bounce(block);
+                        break;
+                    }
+                }
+                Player other = players[(i+1)%2];
+                boolean collision = player.collision(other);
                 if (collision)
-                    player.bounce();
+                    player.bounce(other);
                 player.move();
             }
         }
