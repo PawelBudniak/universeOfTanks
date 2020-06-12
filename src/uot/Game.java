@@ -3,40 +3,50 @@ package uot;
 import uot.objects.*;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 
+
 public class Game {
-    private static final int TICK = 20;
+    private static final int TICK = 15;
     private static final int TANK_LEN = 15;
     private static final int TANK_WID = 20;
     private static final int START_X = 80;
     private static final Color P1_COLOR = Color.GREEN;
     private static final Color P2_COLOR = Color.BLUE;
+    private static final Color TERRAIN_COLOR = Color.DARK_GRAY;
     public static final int N_TERRAIN_BLOCKS = 8;
-    private int boardLength;
-    private int boardWidth;
+    private final int boardLength;
+    private final int boardWidth;
     private Timer gameClock;
-    LinkedList<Terrain> terrain;
-    LinkedList<Bullet> bullets;
-    Player player1;
-    Player player2;
-    Display display;
+    private LinkedList<Terrain> terrain;
+    private LinkedList<Bullet> bullets;
+    Player[] players;
+    private int this_player = 0;
+    //Player player1;
+    //Player player2;
+    private final Display display;
 
 
     public Game(int boardLength, int boardWidth, String p1_nick, String p2_nick){
+        this.terrain = new LinkedList<>();
+        this.bullets = new LinkedList<>();
         this.boardWidth = boardWidth;
         this.boardLength = boardLength;
-        this.player1 = new Player(p1_nick,
+        players = new Player[2];
+        players[0] = new Player(p1_nick,
                 new Tank.Builder(START_X, boardLength/2, TANK_WID, TANK_LEN).color(P1_COLOR).build());
-        this.player2 = new Player(p2_nick,
+        players[1] = new Player(p2_nick,
                 new Tank.Builder(boardLength - START_X, boardLength/2, TANK_WID, TANK_LEN).color(P2_COLOR).build());
         generateWalls();
         generateTerrain();
         gameClock = new Timer(TICK, new GameClock());
         this.display = new Display();
+        display.addKeyListener(new KeyHandler());
+        display.addMouseListener(new MouseHandler());
+        gameClock.start();
     }
 
 
@@ -48,8 +58,8 @@ public class Game {
         for (int i = 0; i < N_TERRAIN_BLOCKS; i++) {
             Terrain new_block;
             do{
-                new_block = new Terrain(random.nextInt(), random.nextInt());
-            }while(player1.collision(new_block) || player2.collision(new_block));
+                new_block = new Terrain(random.nextInt(boardWidth), random.nextInt(boardLength));
+            }while(players[0].collision(new_block) || players[1].collision(new_block));
             terrain.add(new_block);
         }
 
@@ -65,47 +75,167 @@ public class Game {
     }
 
 
+    public Display getDisplay() {
+        return display;
+    }
 
     private class GameClock implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            for (Bullet bullet: bullets){
-                // bullets <-> players collisions
-                if (player1.collision(bullet)) {
-                    player1.hit(bullet);
-                    bullets.remove(bullet);
+            // bullets <-> players collisions
+            for (Iterator<Bullet> iBullet = bullets.iterator(); iBullet.hasNext(); ) {
+                Bullet bullet = iBullet.next();
+
+                for (Player player : players) {
+                    if (!player.isOriginOf(bullet))
+                        if (player.collision(bullet)) {
+                            System.out.println("bullet-player");
+                            double hp = player.hit(bullet);
+                            System.out.println(player.getName() + " hp: " + hp);
+                            if (hp <= 0) {
+                                System.out.println(player.getName() + " loses!");
+                                gameClock.stop();
+                            }
+                            iBullet.remove();
+                        }
                 }
-                if (player2.collision(bullet)){
-                    player2.hit(bullet);
-                    bullets.remove(bullet);
-                }
-                // bullets <-> terrain collisions
-                for (Terrain block: terrain){
-                    if (bullet.collision(block)){
-                        bullets.remove(bullet);
+            }
+            // bullets <-> terrain collisions
+            for (Iterator<Bullet> iBullet = bullets.iterator(); iBullet.hasNext(); ) {
+                Bullet bullet = iBullet.next();
+
+                for (Terrain block : terrain) {
+                    if (bullet.collision(block)) {
+                        System.out.println("bullet-terrain");
+                        iBullet.remove();
+                        break;
                     }
                 }
             }
-            // players <-> terrain collisions (prevent them beforehand)
-            boolean p1_collision = terrain.stream().anyMatch(t -> player1.willCollide(t));
-            boolean p2_collision = terrain.stream().anyMatch(t -> player2.willCollide(t));
-            // players <-> players collisions
 
+            // players <-> terrain collisions
+            bouncePlayerCollisions();
+
+            //players <-> terrain collisions (prevent them beforehand)
+            //preventPlayerCollisions();
+
+
+            bullets.forEach(b -> b.move());
+
+            display.repaint();
+        }
+        /** wersja z odbijaniem */
+        private void bouncePlayerCollisions(){
+            for (int i = 0; i < players.length;  ++i) {
+                Player player = players[i];
+                boolean collision = terrain.stream().anyMatch(t -> player.collision(t));
+                collision = collision || player.collision(players[(i + 1) % 2]);
+                if (collision)
+                    player.bounce();
+                player.move();
+            }
+        }
+        /** wersja z blokowaniem ruchu kolizyjnego */
+        private void preventPlayerCollisions(){
+            boolean p1_collision = terrain.stream().anyMatch(t -> players[0].willCollide(t));
+            boolean p2_collision = terrain.stream().anyMatch(t -> players[1].willCollide(t));
+            // players <-> players collisions
+            // jak obaj wejda w tym samym momencie na siebie to i tak bedzie kolizja wiec to nie jest zbyt dobre
+            p1_collision = p1_collision || players[0].willCollide(players[1]);
+            p2_collision = p2_collision || players[1].willCollide(players[0]);
             // bullets <-> bullets collisions?
             if (!p1_collision)
-                player1.move();
+                players[0].move();
             if (!p2_collision)
-                player2.move();
+                players[1].move();
         }
+
     }
     private class Display extends JPanel{
 
+        public Display(){
+            setFocusable(true);
+            setBackground(Color.black);
+            setPreferredSize(new Dimension(boardWidth, boardLength));
+        }
+
+        private void drawTanks(Graphics g){
+            Graphics2D g2 = (Graphics2D) g;
+            for (Player player: players){
+                g2.setColor(player.getColor());
+                //g.fillRect(player.getX(), player.getY(), player.getWidth(), player.getWidth());
+                g2.fill(player.getShape());
+            }
+        }
+        private void drawTerrain(Graphics g){
+            Graphics2D g2 = (Graphics2D) g;
+            for (Terrain block: terrain){
+                g2.setColor(TERRAIN_COLOR);
+                g2.fill(block.getShape());
+            }
+        }
+
+        private void drawBullets(Graphics g){
+            Graphics2D g2 = (Graphics2D) g;
+            for (Bullet bullet: bullets){
+                g2.setColor(bullet.DEFAULT_COLOR);
+                g2.fill(bullet.getShape());
+            }
+        }
+        @Override
+        public void paintComponent(Graphics g){
+            super.paintComponent(g);
+            drawTerrain(g);
+            drawTanks(g);
+            drawBullets(g);
+        }
     }
 
 
 
 
+    private class KeyHandler extends KeyAdapter{
+        @Override
+        public void keyPressed(KeyEvent e){
+            players[this_player].keyPressed(e);
+        }
+        @Override
+        public void keyReleased(KeyEvent e){
+            players[this_player].keyReleased(e);
+        }
+    }
+    private class MouseHandler implements MouseListener{
 
+        @Override
+        public void mouseClicked(MouseEvent mouseEvent) {
+        }
+
+        @Override
+        public void mousePressed(MouseEvent mouseEvent) {
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent mouseEvent) {
+            if (mouseEvent.getButton() == mouseEvent.BUTTON1) {
+                Bullet new_bullet = players[this_player].shoot(mouseEvent.getX(), mouseEvent.getY());
+                if (new_bullet != null)
+                    bullets.add(new_bullet);
+            }
+            else if (mouseEvent.getButton() == mouseEvent.BUTTON3){
+                Bullet new_bullet = players[(this_player + 1)% 2].shoot(mouseEvent.getX(), mouseEvent.getY());
+                if (new_bullet != null)
+                    bullets.add(new_bullet);
+            }
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent mouseEvent) {
+        }
+
+        @Override
+        public void mouseExited(MouseEvent mouseEvent) {
+        }
+    }
 
 }

@@ -14,4 +14,5 @@ public abstract class RectangularObject {
     public int getHeight() { return rectangle.height; }
     public void setX(int x){ rectangle.x = x; }
     public void setY(int y){ rectangle.y = y; }
+    public Rectangle getShape() { return rectangle; }
 }

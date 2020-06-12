@@ -11,6 +11,7 @@ public class Bullet extends RectangularObject{
 
     private double exactX;
     private double exactY;
+    private final Tank origin;
 
     public void setxDirection(int x,int y) {
         this.xDirection = speed*Math.cos(-(Math.atan2(x-this.getX(),y-this.getY()))+Math.PI/2 );
@@ -23,9 +24,9 @@ public class Bullet extends RectangularObject{
     private double xDirection;
     private double yDirection;
 
-    public Bullet(int startX,int startY,int targetX, int targetY) {
-
+    public Bullet(int startX,int startY,int targetX, int targetY, Tank origin){
         this.rectangle = new Rectangle(startX,startY,width, height);
+        this.origin = origin;
         setxDirection(targetX,targetY);
         setyDirection(targetX,targetY);
         exactX = startX;
@@ -45,6 +46,19 @@ public class Bullet extends RectangularObject{
         rectangle.setLocation((int)exactX,(int)exactY);
     }
 
+    public Tank getOrigin() {
+        return origin;
+    }
 
-
+    @Override
+    public String toString() {
+        return "Bullet{" +
+                "exactX=" + exactX +
+                ", exactY=" + exactY +
+                ", origin=" + origin +
+                ", xDirection=" + xDirection +
+                ", yDirection=" + yDirection +
+                ", rectangle=" + rectangle +
+                '}';
+    }
 }
