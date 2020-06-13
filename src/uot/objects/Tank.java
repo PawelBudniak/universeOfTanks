@@ -33,10 +33,8 @@ public class Tank extends RectangularObject {
     // will be initialized to 0 by default
     private double ax;          // x direction acceleration
     private double ay;          // y direction acceleration
-    private double actual_dx;   // approximate change in the y direction each tick -- is set with each key press
-    private double actual_dy;   // approximate change in the x direction each tick -- is set with each key press
-    private double prev_dx;     // previous change in the y direction -- is set each tick
-    private double prev_dy;     // previous change in the y direction -- is set each tick
+    private double actual_dx;   // approximate change in the y direction each tick
+    private double actual_dy;   // approximate change in the x direction each tick
     private double prev_x;
     private double prev_y;
     private Timer reloadTimer;
@@ -64,27 +62,27 @@ public class Tank extends RectangularObject {
     public void bounce(RectangularObject from) {
 
         // object on the right
-        if (from.getX() < getX() + getWidth() && prev_x + getWidth()<= from.getX()) {
-            actual_dx = -BOUNCE_MODIFIER * prev_dx;
+        if (from.getX() <= getX() + getWidth() && prev_x + getWidth()<= from.getX()) {
+            actual_dx = -BOUNCE_MODIFIER * actual_dx;
         }
         // object on the left
-        else if (from.getX() + from.getWidth() > getX() && prev_x >= from.getWidth() + from.getX()){
-                actual_dx = -BOUNCE_MODIFIER * prev_dx;
+        else if (from.getX() + from.getWidth() >= getX() && prev_x >= from.getWidth() + from.getX()){
+            actual_dx = -BOUNCE_MODIFIER * actual_dx;
         }
         // object below the tank
-        else if (from.getY() < getY() + getHeight() && prev_y + getHeight() <= from.getY()) {
-            actual_dy = -BOUNCE_MODIFIER * prev_dy;
+        else if (from.getY() <= getY() + getHeight() && prev_y + getHeight() <= from.getY()) {
+            actual_dy = -BOUNCE_MODIFIER * actual_dy;
         }
         // object above the tank
-        else if (from.getY() + from.getHeight() > getY() && prev_y >= from.getY() + from.getHeight() ) {
-                actual_dy = -BOUNCE_MODIFIER * prev_dy;
+        else if (from.getY() + from.getHeight() >= getY() && prev_y >= from.getY() + from.getHeight() ) {
+            actual_dy = -BOUNCE_MODIFIER * actual_dy;
         }
         // last ditch effort
         else{
-            //System.out.println(this);
+            System.out.println(this);
             //System.out.println(from);
-            actual_dx = -BOUNCE_MODIFIER * prev_dx;
-            actual_dy = -BOUNCE_MODIFIER * prev_dy;
+            actual_dx = -BOUNCE_MODIFIER * actual_dx;
+            actual_dy = -BOUNCE_MODIFIER * actual_dy;
         }
 
     }
@@ -117,8 +115,6 @@ public class Tank extends RectangularObject {
 
     public void move(){
 
-        prev_dx = actual_dx;
-        prev_dy = actual_dy;
 
         if (a_pressed && !d_pressed)
             ax = -SPEED;
@@ -278,18 +274,16 @@ public class Tank extends RectangularObject {
     @Override
     public String toString() {
         return "Tank{" +
-                "maxHealth=" + maxHealth +
-                ", reloadTime=" + reloadTime +
-                ", ammoCapacity=" + ammoCapacity +
-                ", image=" + image +
-                ", ammoLeft=" + ammoLeft +
-                ", healthLeft=" + healthLeft +
+//                "maxHealth=" + maxHealth +
+//                ", reloadTime=" + reloadTime +
+//                ", ammoCapacity=" + ammoCapacity +
+//                ", image=" + image +
+//                ", ammoLeft=" + ammoLeft +
+//                ", healthLeft=" + healthLeft +
                 ", ax=" + ax +
                 ", ay=" + ay +
                 ", actual_dx=" + actual_dx +
                 ", actual_dy=" + actual_dy +
-                ", prev_dx=" + prev_dx +
-                ", prev_dy=" + prev_dy +
                 ", prev_x=" + prev_x +
                 ", prev_y=" + prev_y +
                 ", a_pressed=" + a_pressed +
