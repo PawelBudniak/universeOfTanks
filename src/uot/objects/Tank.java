@@ -63,26 +63,29 @@ public class Tank extends RectangularObject {
     // experymentalne
     public void bounce(RectangularObject from) {
 
-        // yellow
+        // object on the right
         if (from.getX() < getX() + getWidth() && prev_x + getWidth()<= from.getX()) {
             actual_dx = -BOUNCE_MODIFIER * prev_dx;
         }
-        // red
-         else if (from.getX() + from.getWidth() > getX() && prev_x >= from.getWidth() + from.getX()){
+        // object on the left
+        else if (from.getX() + from.getWidth() > getX() && prev_x >= from.getWidth() + from.getX()){
                 actual_dx = -BOUNCE_MODIFIER * prev_dx;
         }
-        // blue
-         else if (from.getY() < getY() + getHeight() && prev_y + getHeight() <= from.getY()) {
+        // object below the tank
+        else if (from.getY() < getY() + getHeight() && prev_y + getHeight() <= from.getY()) {
             actual_dy = -BOUNCE_MODIFIER * prev_dy;
         }
-        // purple
-         else if (from.getY() + from.getHeight() > getY() && prev_y >= from.getY() + from.getHeight() ) {
+        // object above the tank
+        else if (from.getY() + from.getHeight() > getY() && prev_y >= from.getY() + from.getHeight() ) {
                 actual_dy = -BOUNCE_MODIFIER * prev_dy;
         }
-//         else{
-//             actual_dx = -BOUNCE_MODIFIER * prev_dx;
-//             actual_dy = -BOUNCE_MODIFIER * prev_dy;
-//        }
+        // last ditch effort
+        else{
+            //System.out.println(this);
+            //System.out.println(from);
+            actual_dx = -BOUNCE_MODIFIER * prev_dx;
+            actual_dy = -BOUNCE_MODIFIER * prev_dy;
+        }
 
     }
     // to albo bounce
@@ -223,7 +226,7 @@ public class Tank extends RectangularObject {
             color = val;        return this;
         }
         public Builder image(String path ){
-           var ii = new ImageIcon(path);
+            var ii = new ImageIcon(path);
             image  = ii.getImage();
             return this;
         }
@@ -272,16 +275,27 @@ public class Tank extends RectangularObject {
         return image;
     }
 
-
-
     @Override
     public String toString() {
         return "Tank{" +
-                "ammoLeft=" + ammoLeft +
+                "maxHealth=" + maxHealth +
+                ", reloadTime=" + reloadTime +
+                ", ammoCapacity=" + ammoCapacity +
+                ", image=" + image +
+                ", ammoLeft=" + ammoLeft +
                 ", healthLeft=" + healthLeft +
+                ", ax=" + ax +
+                ", ay=" + ay +
+                ", actual_dx=" + actual_dx +
+                ", actual_dy=" + actual_dy +
                 ", prev_dx=" + prev_dx +
                 ", prev_dy=" + prev_dy +
-                ", rectangle=" + rectangle +
+                ", prev_x=" + prev_x +
+                ", prev_y=" + prev_y +
+                ", a_pressed=" + a_pressed +
+                ", w_pressed=" + w_pressed +
+                ", d_pressed=" + d_pressed +
+                ", s_pressed=" + s_pressed +
                 '}';
     }
 }

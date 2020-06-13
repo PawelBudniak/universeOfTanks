@@ -5,8 +5,8 @@ import java.awt.*;
 
 public class Terrain extends RectangularObject{
 
-    public static final int DEFAULT_WIDTH = 83;
-    public static final int DEFAULT_LENGTH = 70;
+    public static final int DEFAULT_WIDTH = 30;
+    public static final int DEFAULT_LENGTH = 30;
     private Image image;
 
     public Terrain(Rectangle r){
@@ -22,7 +22,7 @@ public class Terrain extends RectangularObject{
     private void initTerrain(int x, int y)
     {
         this.rectangle = new Rectangle(x,y,DEFAULT_WIDTH,DEFAULT_LENGTH);
-        var terrainImg = "src/images/rock.png";
+        var terrainImg = "src/uot/objects/images/rock.png";
         var ii = new ImageIcon(terrainImg);
         image = ii.getImage();
     }

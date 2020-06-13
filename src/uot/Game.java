@@ -11,11 +11,11 @@ import java.util.Random;
 
 public class Game {
     private static final int TICK = 15;
-    private static final int TANK_LEN = 70;
-    private static final int TANK_WID = 82;
+    private static final int TANK_LEN = 36;
+    private static final int TANK_WID = 54;
     private static final int START_X = 80;
-    private static final String P1_PATH = "src/images/blue tank.png";
-    private static final String P2_PATH = "src/images/red tank.png";
+    private static final String P1_PATH = "src/uot/objects/images/blue tank.png";
+    private static final String P2_PATH = "src/uot/objects/images/red tank.png";
     private static final Color TERRAIN_COLOR = Color.DARK_GRAY;
     public static final int N_TERRAIN_BLOCKS = 8;
     private final int boardLength;
@@ -172,28 +172,30 @@ public class Game {
 
         public Display(){
             setFocusable(true);
-            setBackground(Color.black);
+            //setBackground(Color.black);
             setPreferredSize(new Dimension(boardWidth, boardLength));
         }
 
         private void drawTanks(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
             for (Player player: players){
-                g2.drawImage(player.getImage(),player.getX() - TANK_WID/2,player.getY() - TANK_LEN/2,this);
-
+                //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
+                g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
             }
         }
         private void drawTerrain(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
             for (Terrain block: terrain){
-                g2.drawImage(block.getImage(),block.getX()-TANK_WID/2,block.getY()- TANK_LEN/2,this);
+                //g2.drawImage(block.getImage(),block.getX(),block.getY(),this);
+                g2.setColor(TERRAIN_COLOR);
+                g2.fill(block.getShape());
 
             }
         }
 
         public void drawBoard(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
-            var terrainImage = "src/images/ground2.png";
+            var terrainImage = "src/uot/objects/images/ground2.png";
             var ii = new ImageIcon(terrainImage);
             Image image = ii.getImage();
             g2.drawImage(image,0,0,this);
