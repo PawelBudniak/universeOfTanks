@@ -11,11 +11,11 @@ import java.util.Random;
 
 public class Game {
     private static final int TICK = 15;
-    private static final int TANK_LEN = 15;
-    private static final int TANK_WID = 20;
+    private static final int TANK_LEN = 70;
+    private static final int TANK_WID = 82;
     private static final int START_X = 80;
-    private static final Color P1_COLOR = Color.GREEN;
-    private static final Color P2_COLOR = Color.BLUE;
+    private static final String P1_PATH = "src/images/blue tank.png";
+    private static final String P2_PATH = "src/images/red tank.png";
     private static final Color TERRAIN_COLOR = Color.DARK_GRAY;
     public static final int N_TERRAIN_BLOCKS = 8;
     private final int boardLength;
@@ -37,9 +37,9 @@ public class Game {
         this.boardLength = boardLength;
         players = new Player[2];
         players[0] = new Player(p1_nick,
-                new Tank.Builder(START_X, boardLength/2, TANK_WID, TANK_LEN).color(P1_COLOR).build());
+                new Tank.Builder(START_X, boardLength/2, TANK_WID, TANK_LEN).image(P1_PATH).build());
         players[1] = new Player(p2_nick,
-                new Tank.Builder(boardLength - START_X, boardLength/2, TANK_WID, TANK_LEN).color(P2_COLOR).build());
+                new Tank.Builder(boardLength - START_X, boardLength/2, TANK_WID, TANK_LEN).image(P2_PATH).build());
         generateWalls();
         generateTerrain();
         gameClock = new Timer(TICK, new GameClock());
@@ -179,17 +179,24 @@ public class Game {
         private void drawTanks(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
             for (Player player: players){
-                g2.setColor(player.getColor());
-                //g.fillRect(player.getX(), player.getY(), player.getWidth(), player.getWidth());
-                g2.fill(player.getShape());
+                g2.drawImage(player.getImage(),player.getX() - TANK_WID/2,player.getY() - TANK_LEN/2,this);
+
             }
         }
         private void drawTerrain(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
             for (Terrain block: terrain){
-                g2.setColor(TERRAIN_COLOR);
-                g2.fill(block.getShape());
+                g2.drawImage(block.getImage(),block.getX()-TANK_WID/2,block.getY()- TANK_LEN/2,this);
+
             }
+        }
+
+        public void drawBoard(Graphics g){
+            Graphics2D g2 = (Graphics2D) g;
+            var terrainImage = "src/images/ground2.png";
+            var ii = new ImageIcon(terrainImage);
+            Image image = ii.getImage();
+            g2.drawImage(image,0,0,this);
         }
 
         private void drawBullets(Graphics g){
@@ -202,6 +209,7 @@ public class Game {
         @Override
         public void paintComponent(Graphics g){
             super.paintComponent(g);
+            drawBoard(g);
             drawTerrain(g);
             drawTanks(g);
             drawBullets(g);

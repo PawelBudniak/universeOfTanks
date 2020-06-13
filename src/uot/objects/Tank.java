@@ -3,7 +3,6 @@ package uot.objects;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.lang.*;
 
 public class Tank extends RectangularObject {
@@ -13,6 +12,7 @@ public class Tank extends RectangularObject {
     public static final int DEFAULT_RELOAD_TIME = 500;
     /** How many times can the tank shoot continuously before having to reload */
     public static final int DEFAULT_AMMO_CAPACITY = 5;
+    public static final String DEFAULT_PATH = "src/images.blue tank.png";
     public static final Color DEFAULT_COLOR = Color.blue;
 
     private static final double BOUNCE_MODIFIER = 2.5;
@@ -24,7 +24,8 @@ public class Tank extends RectangularObject {
     private final double maxHealth;
     private final int reloadTime;
     private final int ammoCapacity;
-    private final Color color;
+
+    private final Image image;
 
     /** current state (current coordinates are kept in the inherited protected rectangle field) */
     private int ammoLeft;
@@ -198,6 +199,7 @@ public class Tank extends RectangularObject {
         private int reloadTime = DEFAULT_RELOAD_TIME;
         private int ammoCapacity = DEFAULT_AMMO_CAPACITY;
         private Color color = DEFAULT_COLOR;
+        private Image image;
 
         public Builder(Rectangle r){
             this.rectangle = new Rectangle(r);
@@ -220,6 +222,11 @@ public class Tank extends RectangularObject {
         public Builder color(Color val){
             color = val;        return this;
         }
+        public Builder image(String path ){
+           var ii = new ImageIcon(path);
+            image  = ii.getImage();
+            return this;
+        }
         public Tank build(){
             return new Tank(this);
         }
@@ -230,7 +237,8 @@ public class Tank extends RectangularObject {
         maxHealth = builder.maxHealth;
         ammoCapacity = builder.ammoCapacity;
         reloadTime = builder.reloadTime;
-        color = builder.color;
+
+        image = builder.image;
 
 
         ammoLeft = builder.ammoCapacity;
@@ -251,9 +259,6 @@ public class Tank extends RectangularObject {
         return ammoCapacity;
     }
 
-    public Color getColor() {
-        return color;
-    }
 
     public int getAmmoLeft() {
         return ammoLeft;
@@ -261,6 +266,10 @@ public class Tank extends RectangularObject {
 
     public double getHealthLeft() {
         return healthLeft;
+    }
+
+    public Image getImage(){
+        return image;
     }
 
 

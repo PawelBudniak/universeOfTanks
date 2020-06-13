@@ -1,11 +1,13 @@
 package uot.objects;
 
+import javax.swing.*;
 import java.awt.*;
 
 public class Terrain extends RectangularObject{
 
-    public static final int DEFAULT_WIDTH = 20;
-    public static final int DEFAULT_LENGTH = 20;
+    public static final int DEFAULT_WIDTH = 83;
+    public static final int DEFAULT_LENGTH = 70;
+    private Image image;
 
     public Terrain(Rectangle r){
         this.rectangle = new Rectangle(r);
@@ -15,7 +17,18 @@ public class Terrain extends RectangularObject{
         this.rectangle = new Rectangle(x, y, width, height);
     }
     public Terrain(int x, int y) {
-        this.rectangle = new Rectangle(x, y, DEFAULT_WIDTH, DEFAULT_LENGTH);
+        initTerrain(x,y);
+    }
+    private void initTerrain(int x, int y)
+    {
+        this.rectangle = new Rectangle(x,y,DEFAULT_WIDTH,DEFAULT_LENGTH);
+        var terrainImg = "src/images/rock.png";
+        var ii = new ImageIcon(terrainImg);
+        image = ii.getImage();
+    }
+
+    public Image getImage() {
+        return image;
     }
 
     @Override
