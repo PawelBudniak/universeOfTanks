@@ -72,7 +72,10 @@ public class Game {
     private void sendBoard() {
         ServerPacket packet = new ServerPacket(players, bullets, terrain);
         try{
+            if (out == null)
+                System.out.println("NULLER!!!!!!!");
             out.writeObject(packet);
+            out.flush();
         } catch (IOException e){
             e.printStackTrace();
         }

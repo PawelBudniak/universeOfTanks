@@ -89,6 +89,7 @@ public class Client {
         try{
             ClientPacket packet = new ClientPacket(keyPressed, isKeyPressedValid,keyReleased,isKeyReleasedValid,mouseX,mouseY,isMouseInputValid);
             out.writeObject(packet);
+            out.flush();
         }catch (IOException e){
             e.printStackTrace();
         }

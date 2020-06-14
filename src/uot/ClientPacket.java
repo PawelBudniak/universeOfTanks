@@ -1,6 +1,9 @@
 package uot;
 
-public class ClientPacket {
+import java.io.Serializable;
+
+public class ClientPacket implements Serializable {
+    private static final long serialVersionUID = -7273989242381916569L;
     private int keyPressed;
     private boolean isKeyPressedValid;
     private int keyReleased;

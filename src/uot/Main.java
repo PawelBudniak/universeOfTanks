@@ -21,34 +21,35 @@ public class Main {
 
 //        }
 
-        EventQueue.invokeLater(()->
-        {
-            Game game = new Game(500, 500, "mati", "seba");
-            JFrame frame = new GameFrame(game.getDisplay());
-            frame.setVisible(true);
-        });
+//        EventQueue.invokeLater(()->
+//        {
+//            Game game = new Game(500, 500, "mati", "seba");
+//            JFrame frame = new GameFrame(game.getDisplay());
+//            frame.setVisible(true);
+//        });
 
 
 
-//        try (
-//                ServerSocket serverSocket = new ServerSocket(4444);
-//                Socket clientSocket = serverSocket.accept();
-////                ObjectOutputStream out =
-////                        new ObjectOutputStream(clientSocket.getOutputStream());
-//
+        try (
+                ServerSocket serverSocket = new ServerSocket(4444);
+                Socket clientSocket = serverSocket.accept();
+                ObjectOutputStream out =
+                        new ObjectOutputStream(clientSocket.getOutputStream());
+
 //                PrintWriter out =
 //                        new PrintWriter(clientSocket.getOutputStream(), true);
 //                BufferedReader in = new BufferedReader(
 //                        new InputStreamReader(clientSocket.getInputStream()));
-////                ObjectInputStream in =
-////                        new ObjectInputStream(clientSocket.getInputStream());
-//        ) {
-//            Game game = new Game(500, 500,"Seba","Mati", out, in);
-//            JFrame frame = new GameFrame(game.getDisplay());
-//            //frame.add(game.getDisplay());
-//            frame.setVisible(true);
-//
-//
+                ObjectInputStream in =
+                        new ObjectInputStream(clientSocket.getInputStream());
+        ) {
+            out.writeObject(new ServerPacket(null, null, null));
+            Game game = new Game(500, 500,"Seba","Mati", out, in);
+            JFrame frame = new GameFrame(game.getDisplay());
+            //frame.add(game.getDisplay());
+            frame.setVisible(true);
+
+
 //            String inputLine, outputLine;
 //
 //            // Initiate conversation with client
@@ -68,11 +69,11 @@ public class Main {
 //                if (outputLine.equals("Bye."))
 //                    break;
 //            }
-//        } catch (IOException e) {
-//            System.out.println("Exception caught when trying to listen on port "
-//                    + 4444 + " or listening for a connection");
-//            System.out.println(e.getMessage());
-//        }
+        } catch (IOException e) {
+            System.out.println("Exception caught when trying to listen on port "
+                    + 4444 + " or listening for a connection");
+            System.out.println(e.getMessage());
+        }
 
 
         System.out.println("Test");

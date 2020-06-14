@@ -3,9 +3,12 @@ package uot;
 import uot.objects.Bullet;
 import uot.objects.Terrain;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
-public class ServerPacket {
+public class ServerPacket implements Serializable {
+
+    private static final long serialVersionUID = 7030644259386334167L;
     private Player[] players;
     private LinkedList<Bullet> bullets;
     private LinkedList<Terrain> terrain;
