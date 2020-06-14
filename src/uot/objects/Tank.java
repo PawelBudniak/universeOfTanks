@@ -3,9 +3,10 @@ package uot.objects;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.Serializable;
 import java.lang.*;
 
-public class Tank extends RectangularObject {
+public class Tank extends RectangularObject implements Serializable {
 
 
     public static final double DEFAULT_HEALTH = 300.0;
@@ -19,13 +20,14 @@ public class Tank extends RectangularObject {
     private static final double SPEED = 0.4;
     private static final double SPEED_CAP = 6.0;
     private static final double FRICTION = 0.97;
+    private static final long serialVersionUID = 5469024326928012237L;
 
     /** tank parameters */
     private final double maxHealth;
     private final int reloadTime;
     private final int ammoCapacity;
 
-    private final Image image;
+    //private final Image image;
 
     /** current state (current coordinates are kept in the inherited protected rectangle field) */
     private int ammoLeft;
@@ -141,9 +143,8 @@ public class Tank extends RectangularObject {
         setX(getX() + dx);
         setY(getY() + dy);
     }
-    public void keyPressed(KeyEvent e){
-        int code = e.getKeyCode();
-        switch(code){
+    public void keyPressed(int keyCode ){
+        switch(keyCode){
             case KeyEvent.VK_W:
                 w_pressed = true;
                 ay = -SPEED;
@@ -160,9 +161,8 @@ public class Tank extends RectangularObject {
                 break;
         }
     }
-    public void  keyReleased(KeyEvent e){
-        int code = e.getKeyCode();
-        switch(code){
+    public void  keyReleased(int keyCode){
+        switch(keyCode){
             case KeyEvent.VK_W:
                 w_pressed = false;
                 break;
@@ -221,11 +221,11 @@ public class Tank extends RectangularObject {
         public Builder color(Color val){
             color = val;        return this;
         }
-        public Builder image(String path ){
-            var ii = new ImageIcon(path);
-            image  = ii.getImage();
-            return this;
-        }
+//        public Builder image(String path ){
+//            var ii = new ImageIcon(path);
+//            image  = ii.getImage();
+//            return this;
+//        }
         public Tank build(){
             return new Tank(this);
         }
@@ -237,7 +237,7 @@ public class Tank extends RectangularObject {
         ammoCapacity = builder.ammoCapacity;
         reloadTime = builder.reloadTime;
 
-        image = builder.image;
+        //image = builder.image;
 
 
         ammoLeft = builder.ammoCapacity;
@@ -267,9 +267,9 @@ public class Tank extends RectangularObject {
         return healthLeft;
     }
 
-    public Image getImage(){
-        return image;
-    }
+//    public Image getImage(){
+//        return image;
+//    }
 
     @Override
     public String toString() {

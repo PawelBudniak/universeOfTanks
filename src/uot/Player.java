@@ -4,9 +4,11 @@ import uot.objects.*;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.Serializable;
 
 
-public class Player {
+public class Player implements Serializable {
+    private static final long serialVersionUID = 3304568958729910057L;
     private final String name;
     private final Tank tank;
 
@@ -40,12 +42,12 @@ public class Player {
     public boolean willCollide(RectangularObject obj){
         return tank.willCollide(obj);
     }
-    public void keyPressed(KeyEvent e) { tank.keyPressed(e); }
-    public void keyReleased(KeyEvent e) { tank.keyReleased(e); }
+    public void keyPressed(int keyCode) { tank.keyPressed(keyCode); }
+    public void keyReleased(int keyCode) { tank.keyReleased(keyCode); }
     public boolean willCollide(Player other) { return tank.willCollide(other.tank); }
     public void bounce(RectangularObject from) { tank.bounce(from); }
     public void bounce(Player from) { tank.bounce(from.getTank()); }
-   public Image getImage() {return tank.getImage();}
+   //public Image getImage() {return tank.getImage();}
     public int getX() { return tank.getX(); }
     public int getY() { return tank.getY(); }
     public int getWidth() { return tank.getWidth(); }

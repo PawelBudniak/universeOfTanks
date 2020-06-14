@@ -1,13 +1,15 @@
 package uot.objects;
 
 import java.awt.*;
+import java.io.Serializable;
 
-public class Bullet extends RectangularObject{
+public class Bullet extends RectangularObject implements Serializable {
 
     public static final Color DEFAULT_COLOR = Color.red;
     private static final int width = 5;
     private static final int height = 5;
     private static final int speed = 5;
+    private static final long serialVersionUID = 1397659479066755887L;
 
     private double exactX;
     private double exactY;

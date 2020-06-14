@@ -4,18 +4,22 @@ import uot.objects.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 
 
 public class Game {
-    private static final int TICK = 15;
+    private static final int TICK = 20;
     private static final int TANK_LEN = 36;
     private static final int TANK_WID = 54;
     private static final int START_X = 80;
     private static final String P1_PATH = "src/uot/objects/images/blue tank.png";
     private static final String P2_PATH = "src/uot/objects/images/red tank.png";
+    private static final Image TANK1_IMG;
+    private static final Image TANK2_IMG;
+
     private static final Color TERRAIN_COLOR = Color.DARK_GRAY;
     public static final int N_TERRAIN_BLOCKS = 8;
     private final int boardLength;
@@ -23,12 +27,21 @@ public class Game {
     private Timer gameClock;
     private LinkedList<Terrain> terrain;
     private LinkedList<Bullet> bullets;
-    Player[] players;
+    private Player[] players;
     private int this_player = 0;
+    private int other_player = 1;
     //Player player1;
     //Player player2;
     private final Display display;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
 
+    static{
+        ImageIcon i = new ImageIcon(P1_PATH);
+        TANK1_IMG = i.getImage();
+        i = new ImageIcon(P2_PATH);
+        TANK2_IMG = i.getImage();
+    }
 
     public Game(int boardLength, int boardWidth, String p1_nick, String p2_nick){
         this.terrain = new LinkedList<>();
@@ -37,11 +50,12 @@ public class Game {
         this.boardLength = boardLength;
         players = new Player[2];
         players[0] = new Player(p1_nick,
-                new Tank.Builder(START_X, boardLength/2, TANK_WID, TANK_LEN).image(P1_PATH).build());
+                new Tank.Builder(START_X, boardLength/2, TANK_WID, TANK_LEN).build());
         players[1] = new Player(p2_nick,
-                new Tank.Builder(boardLength - START_X, boardLength/2, TANK_WID, TANK_LEN).image(P2_PATH).build());
+                new Tank.Builder(boardLength - START_X, boardLength/2, TANK_WID, TANK_LEN).build());
         generateWalls();
         generateTerrain();
+        sendBoard();
         gameClock = new Timer(TICK, new GameClock());
         this.display = new Display();
         display.addKeyListener(new KeyHandler());
@@ -49,7 +63,47 @@ public class Game {
         gameClock.start();
     }
 
+    public Game(int boardLength, int boardWidth, String p1_nick, String p2_nick, ObjectOutputStream out, ObjectInputStream in){
+        this(boardLength, boardWidth, p1_nick, p2_nick);
+        this.in = in;
+        this.out = out;
+    }
 
+    private void sendBoard() {
+        ServerPacket packet = new ServerPacket(players, bullets, terrain);
+        try{
+            out.writeObject(packet);
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void sendPacket(){
+        ServerPacket packet = new ServerPacket(players, bullets, null);
+        try{
+            out.writeObject(packet);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+    private void receivePacket(){
+        try {
+            ClientPacket packet = (ClientPacket) in.readObject();
+            if (packet.isKeyPressedValid()){
+                players[other_player].keyPressed(packet.getKeyPressed());
+            }
+            if (packet.isKeyReleasedValid()){
+                players[other_player].keyReleased(packet.getKeyReleased());
+            }
+            if (packet.isMouseInputValid()){
+                Bullet bullet = players[other_player].shoot(packet.getMouseX(), packet.getMouseY());
+                if (bullet != null)
+                    bullets.add(bullet);
+            }
+        }catch (IOException | ClassNotFoundException e){
+            e.printStackTrace();
+        }
+    }
 
     /** generate terrain in the middle of the board */
     // prevent terrain collisions?
@@ -121,9 +175,12 @@ public class Game {
             //preventPlayerCollisions();
 
 
-            bullets.forEach(b -> b.move());
+            bullets.forEach(Bullet::move);
 
             display.repaint();
+
+            sendPacket();
+            receivePacket();
         }
         /** wersja z odbijaniem */
 //        private void bouncePlayerCollisions(){
@@ -178,10 +235,13 @@ public class Game {
 
         private void drawTanks(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
-            for (Player player: players){
+            //for (Player player: players){
                 //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
-                g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
-            }
+                g2.drawImage(TANK1_IMG, players[this_player].getX(), players[this_player].getY(), this);
+                g2.drawImage(TANK2_IMG, players[other_player].getX(), players[other_player].getY(), this);
+
+                //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
+            //}
         }
         private void drawTerrain(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
@@ -204,7 +264,7 @@ public class Game {
         private void drawBullets(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
             for (Bullet bullet: bullets){
-                g2.setColor(bullet.DEFAULT_COLOR);
+                g2.setColor(Bullet.DEFAULT_COLOR);
                 g2.fill(bullet.getShape());
             }
         }
@@ -219,16 +279,21 @@ public class Game {
     }
 
 
-
+//
+//    public void getInput(int x, int y){
+//        Bullet new_bullet = players[other_player].shoot(x, y);
+//        if (new_bullet != null)
+//            bullets.add(new_bullet);
+//    }
 
     private class KeyHandler extends KeyAdapter{
         @Override
         public void keyPressed(KeyEvent e){
-            players[this_player].keyPressed(e);
+            players[this_player].keyPressed(e.getKeyCode());
         }
         @Override
         public void keyReleased(KeyEvent e){
-            players[this_player].keyReleased(e);
+            players[this_player].keyReleased(e.getKeyCode());
         }
     }
     private class MouseHandler implements MouseListener{
@@ -243,12 +308,12 @@ public class Game {
 
         @Override
         public void mouseReleased(MouseEvent mouseEvent) {
-            if (mouseEvent.getButton() == mouseEvent.BUTTON1) {
+            if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
                 Bullet new_bullet = players[this_player].shoot(mouseEvent.getX(), mouseEvent.getY());
                 if (new_bullet != null)
                     bullets.add(new_bullet);
             }
-            else if (mouseEvent.getButton() == mouseEvent.BUTTON3){
+            else if (mouseEvent.getButton() == MouseEvent.BUTTON3){
                 Bullet new_bullet = players[(this_player + 1)% 2].shoot(mouseEvent.getX(), mouseEvent.getY());
                 if (new_bullet != null)
                     bullets.add(new_bullet);
