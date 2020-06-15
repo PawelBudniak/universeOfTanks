@@ -147,7 +147,6 @@ public class Tank extends RectangularObject implements Serializable {
         switch(keyCode){
             case KeyEvent.VK_W:
                 w_pressed = true;
-                ay = -SPEED;
                 break;
             case KeyEvent.VK_A:
                 a_pressed = true;
@@ -157,7 +156,6 @@ public class Tank extends RectangularObject implements Serializable {
                 break;
             case KeyEvent.VK_S:
                 s_pressed = true;
-                ay = SPEED;
                 break;
         }
     }

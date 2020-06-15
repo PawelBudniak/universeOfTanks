@@ -27,6 +27,7 @@ public class Game {
     private final int boardLength;
     private final int boardWidth;
     private Timer gameClock;
+    private Timer networkClock;
     private LinkedList<Terrain> terrain;
     private LinkedList<Bullet> bullets;
     private Player[] players;
@@ -37,6 +38,7 @@ public class Game {
     private final Display display;
     private ObjectOutputStream out;
     private ObjectInputStream in;
+    private boolean isOver;
 
     static{
         ImageIcon i = new ImageIcon(P1_PATH);
@@ -61,10 +63,15 @@ public class Game {
         generateTerrain();
         //sendBoard();
         gameClock = new Timer(TICK, new GameClock());
+        networkClock = new Timer (40, (ActionEvent) -> {
+            sendPacket();
+            receivePacket();
+        });
         this.display = new Display();
         display.addKeyListener(new KeyHandler());
         display.addMouseListener(new MouseHandler());
         gameClock.start();
+        networkClock.start();
     }
 
     public Game(int boardLength, int boardWidth, String p1_nick, String p2_nick, ObjectOutputStream out, ObjectInputStream in){
@@ -158,12 +165,15 @@ public class Game {
         return display;
     }
 
+
     private class GameClock implements ActionListener{
         private int counter;
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             // bullets <-> players collisions
+            //receivePacket();
+
             for (Iterator<Bullet> iBullet = bullets.iterator(); iBullet.hasNext(); ) {
                 Bullet bullet = iBullet.next();
 
@@ -176,6 +186,9 @@ public class Game {
                             System.out.println(player.getName() + " hp: " + hp);
                             if (hp <= 0) {
                                 System.out.println(player.getName() + " loses!");
+                                networkClock.stop();
+                                isOver = true;
+                                sendPacket();
                                 gameClock.stop();
                             }
                             iBullet.remove();
@@ -206,24 +219,11 @@ public class Game {
 
             display.repaint();
 
-            ++counter;
+//
+            //sendPacket();
 
-            if (counter % 4 == 0) {
-                sendPacket();
-                receivePacket();
-            }
         }
         /** wersja z odbijaniem */
-//        private void bouncePlayerCollisions(){
-//            for (int i = 0; i < players.length;  ++i) {
-//                Player player = players[i];
-//                boolean collision = terrain.stream().anyMatch(t -> player.collision(t));
-//                collision = collision || player.collision(players[(i + 1) % 2]);
-//                if (collision)
-//                    player.bounce();
-//                player.move();
-//            }
-//        }
         private void bouncePlayerCollisions(){
             for (int i = 0; i < players.length;  ++i) {
                 Player player = players[i];
@@ -307,14 +307,6 @@ public class Game {
             drawBullets(g);
         }
     }
-
-
-//
-//    public void getInput(int x, int y){
-//        Bullet new_bullet = players[other_player].shoot(x, y);
-//        if (new_bullet != null)
-//            bullets.add(new_bullet);
-//    }
 
     private class KeyHandler extends KeyAdapter{
         @Override
