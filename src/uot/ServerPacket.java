@@ -11,15 +11,15 @@ public class ServerPacket implements Serializable {
     private static final long serialVersionUID = 1787734974709445764L;
     private int serverTankX;
     private int serverTankY;
-    private int clientTankY;
     private int clientTankX;
+    private int clientTankY;
     private LinkedList<Coordinates> bullets;
 
-    public ServerPacket(int serverTankX, int serverTankY, int clientTankY, int clientTankX, LinkedList<Coordinates> bullets) {
+    public ServerPacket(int serverTankX, int serverTankY, int clientTankX, int clientTankY, LinkedList<Coordinates> bullets) {
         this.serverTankX = serverTankX;
         this.serverTankY = serverTankY;
-        this.clientTankY = clientTankY;
         this.clientTankX = clientTankX;
+        this.clientTankY = clientTankY;
         this.bullets = bullets;
     }
 

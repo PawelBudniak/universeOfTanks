@@ -49,4 +49,17 @@ public class ClientPacket implements Serializable {
     public boolean isMouseInputValid() {
         return isMouseInputValid;
     }
+
+    @Override
+    public String toString() {
+        return "ClientPacket{" +
+                "keyPressed=" + keyPressed +
+                ", isKeyPressedValid=" + isKeyPressedValid +
+                ", keyReleased=" + keyReleased +
+                ", isKeyReleasedValid=" + isKeyReleasedValid +
+                ", mouseX=" + mouseX +
+                ", mouseY=" + mouseY +
+                ", isMouseInputValid=" + isMouseInputValid +
+                '}';
+    }
 }

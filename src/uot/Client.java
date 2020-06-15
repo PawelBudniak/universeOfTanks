@@ -29,6 +29,7 @@ public class Client {
             JFrame frame = new GameFrame(client.getDisplay());
             frame.setVisible(true);
             while (true){
+                continue;
                 //client.receivePacket();w
             }
 
@@ -65,6 +66,7 @@ public class Client {
     private int mouseY;
     private boolean isMouseInputValid;
     private Timer clock;
+    private Timer networkClock;
     private static final String P1_PATH = "src/uot/objects/images/blue tank.png";
     private static final String P2_PATH = "src/uot/objects/images/red tank.png";
     private static final String BL_PATH = "src/uot/objects/images/bullet.png";
@@ -92,6 +94,10 @@ public class Client {
         //receivePacket(); // get initial board state
         display = new Display();
         clock  = new Timer(TICK, new Clock());
+        networkClock = new Timer (40, (ActionEvent) -> {
+            sendPacket();
+            receivePacket();
+        });
     }
 
     public Display getDisplay() {
@@ -113,6 +119,8 @@ public class Client {
             }
         }
         clock.start();
+        networkClock.start();
+
     }
 
     public void sendPacket(){
@@ -120,7 +128,7 @@ public class Client {
         try{
             ClientPacket packet = new ClientPacket(keyPressed, isKeyPressedValid,keyReleased,isKeyReleasedValid,mouseX,mouseY,isMouseInputValid);
             isKeyPressedValid = isKeyReleasedValid = isMouseInputValid = false;
-            // System.out.println(packet);
+            System.out.println(packet);
             out.writeObject(packet);
             out.flush();
             out.reset();
@@ -149,12 +157,10 @@ public class Client {
         private int counter;
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            ++counter;
-            if(counter %4== 1) {
-                receivePacket();
-                sendPacket();
-            }
+
+           // sendPacket();
             display.repaint();
+           // receivePacket();
         }
     }
 
