@@ -13,9 +13,9 @@ public class ServerPacket implements Serializable {
     private int serverTankY;
     private int clientTankY;
     private int clientTankX;
-    private List<Coordinates> bullets;
+    private LinkedList<Coordinates> bullets;
 
-    public ServerPacket(int serverTankX, int serverTankY, int clientTankY, int clientTankX, List<Coordinates> bullets) {
+    public ServerPacket(int serverTankX, int serverTankY, int clientTankY, int clientTankX, LinkedList<Coordinates> bullets) {
         this.serverTankX = serverTankX;
         this.serverTankY = serverTankY;
         this.clientTankY = clientTankY;
@@ -43,7 +43,7 @@ public class ServerPacket implements Serializable {
         return clientTankX;
     }
 
-    public List<Coordinates> getBullets() {
+    public LinkedList<Coordinates> getBullets() {
         return bullets;
     }
 }

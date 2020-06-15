@@ -48,8 +48,12 @@ public class Client {
 
     private static final int TICK = 15;
     private LinkedList<Terrain> terrain;
-    private LinkedList<Bullet> bullets;
-    private Player[] players;
+    private LinkedList<Coordinates> bullets;
+    //private Player[] players;
+    private int serverTankX;
+    private int serverTankY;
+    private int clientTankY;
+    private int clientTankX;
     private static final int boardWidth = 500;
     private static final int boardLength = 500;
     private static final Color TERRAIN_COLOR = Color.DARK_GRAY;
@@ -101,8 +105,6 @@ public class Client {
                 //System.out.println("" + received.getBullets() + "," + received.getPlayers() + "," + received.getTerrain());
                 //System.out.println(received.getPlayers()[0]);
                 //if (received.getPlayers()[0] != null) System.out.println(received.getPlayers()[0].getTank());
-                bullets = received.getBullets();
-                players = received.getPlayers();
                 if (received.getTerrain() != null) {
                     terrain = received.getTerrain();
                 }
@@ -129,15 +131,15 @@ public class Client {
     //public void receiveBoard(){}
     public void receivePacket(){
         try {
-            BoardPacket received = (BoardPacket) in.readObject();
+            ServerPacket received = (ServerPacket) in.readObject();
             //System.out.println("" + received.getBullets() +"," + received.getPlayers()+","+ received.getTerrain());
             //System.out.println(received.getPlayers()[0]);
             //if (received.getPlayers()[0] != null) System.out.println(received.getPlayers()[0].getTank());
             bullets = received.getBullets();
-            players = received.getPlayers();
-            if (received.getTerrain() != null){
-                terrain = received.getTerrain();
-            }
+            serverTankX = received.getServerTankX();
+            serverTankY = received.getServerTankY();
+            clientTankX = received.getClientTankX();
+            clientTankY = received.getClientTankY();
         }catch (IOException | ClassNotFoundException e){
             e.printStackTrace();
         }
@@ -167,8 +169,8 @@ public class Client {
 
         private void drawTanks(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
-            g2.drawImage(TANK2_IMG, players[this_player].getX(), players[this_player].getY(), this);
-            g2.drawImage(TANK1_IMG, players[other_player].getX(), players[other_player].getY(), this);
+            g2.drawImage(TANK2_IMG, clientTankX, clientTankY, this);
+            g2.drawImage(TANK1_IMG, serverTankX, serverTankY, this);
 
             //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
             //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
@@ -193,7 +195,7 @@ public class Client {
 
         private void drawBullets(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
-            for (Bullet bullet: bullets){
+            for (Coordinates bullet: bullets){
                 g2.drawImage(BULLET_IMG,bullet.getX(),bullet.getY(),this);
 //                g2.setColor(bullet.DEFAULT_COLOR);
 //                g2.fill(bullet.getShape());

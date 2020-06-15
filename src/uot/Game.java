@@ -85,9 +85,24 @@ public class Game {
         }
     }
 
+//    public void sendPacket(){
+//        //  System.out.println("wysylam pakiet, " + players[0].getTank());
+//        BoardPacket packet = new BoardPacket(players, bullets, null);
+//        try{
+//            out.writeObject(packet);
+//            out.flush();
+//            out.reset();
+//        }catch (IOException e){
+//            e.printStackTrace();
+//        }
+//    }
+
     public void sendPacket(){
         //  System.out.println("wysylam pakiet, " + players[0].getTank());
-        BoardPacket packet = new BoardPacket(players, bullets, null);
+        LinkedList<Coordinates> coords = new LinkedList<>();
+        bullets.forEach(bullet -> coords.add(new Coordinates(bullet.getX(), bullet.getY())));
+        ServerPacket packet = new ServerPacket(players[this_player].getX(), players[this_player].getY(),
+                                        players[other_player].getX(), players[other_player].getY(), coords);
         try{
             out.writeObject(packet);
             out.flush();
