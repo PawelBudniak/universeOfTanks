@@ -1,34 +1,49 @@
 package uot;
 
 import uot.objects.Bullet;
-import uot.objects.Terrain;
 
 import java.io.Serializable;
 import java.util.LinkedList;
+import java.util.List;
 
 public class ServerPacket implements Serializable {
 
-    private static final long serialVersionUID = 7030644259386334167L;
-    private Player[] players;
-    private LinkedList<Bullet> bullets;
-    private LinkedList<Terrain> terrain;
+    private static final long serialVersionUID = 1787734974709445764L;
+    private int serverTankX;
+    private int serverTankY;
+    private int clientTankY;
+    private int clientTankX;
+    private List<Coordinates> bullets;
 
-    public ServerPacket(Player[] players, LinkedList<Bullet> bullets, LinkedList<Terrain> terrain) {
-        this.players = players;
+    public ServerPacket(int serverTankX, int serverTankY, int clientTankY, int clientTankX, List<Coordinates> bullets) {
+        this.serverTankX = serverTankX;
+        this.serverTankY = serverTankY;
+        this.clientTankY = clientTankY;
+        this.clientTankX = clientTankX;
         this.bullets = bullets;
-        this.terrain = terrain;
     }
 
-    public Player[] getPlayers() {
-        return players;
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
     }
 
-    public LinkedList<Bullet> getBullets() {
+    public int getServerTankX() {
+        return serverTankX;
+    }
+
+    public int getServerTankY() {
+        return serverTankY;
+    }
+
+    public int getClientTankY() {
+        return clientTankY;
+    }
+
+    public int getClientTankX() {
+        return clientTankX;
+    }
+
+    public List<Coordinates> getBullets() {
         return bullets;
     }
-
-    public LinkedList<Terrain> getTerrain() {
-        return terrain;
-    }
 }
-

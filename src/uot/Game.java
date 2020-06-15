@@ -11,12 +11,14 @@ import java.util.Random;
 
 
 public class Game {
-    private static final int TICK = 20;
+    private static final int TICK = 15;
     private static final int TANK_LEN = 36;
     private static final int TANK_WID = 54;
     private static final int START_X = 80;
     private static final String P1_PATH = "src/uot/objects/images/blue tank.png";
     private static final String P2_PATH = "src/uot/objects/images/red tank.png";
+    private static final String BL_PATH = "src/uot/objects/images/bullet.png";
+    private static final Image BULLET_IMG;
     private static final Image TANK1_IMG;
     private static final Image TANK2_IMG;
 
@@ -41,6 +43,8 @@ public class Game {
         TANK1_IMG = i.getImage();
         i = new ImageIcon(P2_PATH);
         TANK2_IMG = i.getImage();
+        i = new ImageIcon(BL_PATH);
+        BULLET_IMG = i.getImage();
     }
 
     public Game(int boardLength, int boardWidth, String p1_nick, String p2_nick){
@@ -55,7 +59,7 @@ public class Game {
                 new Tank.Builder(boardLength - START_X, boardLength/2, TANK_WID, TANK_LEN).build());
         generateWalls();
         generateTerrain();
-        sendBoard();
+        //sendBoard();
         gameClock = new Timer(TICK, new GameClock());
         this.display = new Display();
         display.addKeyListener(new KeyHandler());
@@ -69,27 +73,30 @@ public class Game {
         this.out = out;
     }
 
-    private void sendBoard() {
-        ServerPacket packet = new ServerPacket(players, bullets, terrain);
+    public void sendBoard() {
+        System.out.println("wysylam board");
+        BoardPacket packet = new BoardPacket(players, bullets, terrain);
         try{
-            if (out == null)
-                System.out.println("NULLER!!!!!!!");
             out.writeObject(packet);
             out.flush();
+            out.reset();
         } catch (IOException e){
             e.printStackTrace();
         }
     }
 
-    private void sendPacket(){
-        ServerPacket packet = new ServerPacket(players, bullets, null);
+    public void sendPacket(){
+        //  System.out.println("wysylam pakiet, " + players[0].getTank());
+        BoardPacket packet = new BoardPacket(players, bullets, null);
         try{
             out.writeObject(packet);
+            out.flush();
+            out.reset();
         }catch (IOException e){
             e.printStackTrace();
         }
     }
-    private void receivePacket(){
+    public void receivePacket(){
         try {
             ClientPacket packet = (ClientPacket) in.readObject();
             if (packet.isKeyPressedValid()){
@@ -137,6 +144,7 @@ public class Game {
     }
 
     private class GameClock implements ActionListener{
+        private int counter;
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
@@ -147,7 +155,8 @@ public class Game {
                 for (Player player : players) {
                     if (!player.isOriginOf(bullet))
                         if (player.collision(bullet)) {
-                            System.out.println("bullet-player");
+                            //
+                            // System.out.println("bullet-player");
                             double hp = player.hit(bullet);
                             System.out.println(player.getName() + " hp: " + hp);
                             if (hp <= 0) {
@@ -164,7 +173,7 @@ public class Game {
 
                 for (Terrain block : terrain) {
                     if (bullet.collision(block)) {
-                        System.out.println("bullet-terrain");
+                        //System.out.println("bullet-terrain");
                         iBullet.remove();
                         break;
                     }
@@ -182,8 +191,12 @@ public class Game {
 
             display.repaint();
 
-            sendPacket();
-            receivePacket();
+            ++counter;
+
+            if (counter % 4 == 0) {
+                sendPacket();
+                receivePacket();
+            }
         }
         /** wersja z odbijaniem */
 //        private void bouncePlayerCollisions(){
@@ -267,8 +280,7 @@ public class Game {
         private void drawBullets(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
             for (Bullet bullet: bullets){
-                g2.setColor(Bullet.DEFAULT_COLOR);
-                g2.fill(bullet.getShape());
+                g2.drawImage(BULLET_IMG,bullet.getX(),bullet.getY(),this);
             }
         }
         @Override

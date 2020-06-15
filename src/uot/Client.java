@@ -3,12 +3,10 @@ package uot;
 import uot.objects.Bullet;
 import uot.objects.Terrain;
 
-import javax.imageio.IIOException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
@@ -18,22 +16,27 @@ public class Client {
     public static void main(String[] args) {
 
         String hostName = "192.168.0.178";
-        int portNumber = 4444;
+        int portNumber = 4445;
 
         try (
                 Socket clientSocket = new Socket(hostName, portNumber);
                 ObjectOutputStream out =
                         new ObjectOutputStream(clientSocket.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream((clientSocket.getInputStream()));
+                ObjectInputStream in = new ObjectInputStream((clientSocket.getInputStream()))
         ) {
             Client client = new Client(out, in);
+            client.receiveBoard();
             JFrame frame = new GameFrame(client.getDisplay());
             frame.setVisible(true);
+            while (true){
+                //client.receivePacket();w
+            }
 
         } catch (UnknownHostException e) {
             System.err.println("Unkown host");
             System.exit(1);
         } catch (IOException e) {
+            e.printStackTrace();
             System.err.println("I/O error");
             System.exit(1);
         }
@@ -43,7 +46,7 @@ public class Client {
     private ObjectOutputStream out;
     private ObjectInputStream in;
 
-    private static final int TICK = 25;
+    private static final int TICK = 15;
     private LinkedList<Terrain> terrain;
     private LinkedList<Bullet> bullets;
     private Player[] players;
@@ -60,36 +63,65 @@ public class Client {
     private Timer clock;
     private static final String P1_PATH = "src/uot/objects/images/blue tank.png";
     private static final String P2_PATH = "src/uot/objects/images/red tank.png";
+    private static final String BL_PATH = "src/uot/objects/images/bullet.png";
+    private static final Image BULLET_IMG;
     private static final Image TANK1_IMG;
     private static final Image TANK2_IMG;
     private Display display;
+    private final int this_player = 1;
+    private final int other_player = 0;
 
     static{
-        ImageIcon i = new ImageIcon("src/uot/objects/images/blue tank.png");
+        ImageIcon i = new ImageIcon(P1_PATH);
         TANK1_IMG = i.getImage();
-        i = new ImageIcon("src/uot/objects/images/red tank.png");
+        i = new ImageIcon(P2_PATH);
         TANK2_IMG = i.getImage();
+        i = new ImageIcon(BL_PATH);
+        BULLET_IMG = i.getImage();
     }
 
 
     public Client(ObjectOutputStream out, ObjectInputStream in) {
         this.out = out;
         this.in = in;
-        receivePacket(); // get initial board state
+        terrain = null;
+        //receivePacket(); // get initial board state
         display = new Display();
         clock  = new Timer(TICK, new Clock());
-        clock.start();
     }
 
     public Display getDisplay() {
         return display;
     }
 
+    public void receiveBoard(){
+        while(terrain == null) {
+            try {
+                BoardPacket received = (BoardPacket) in.readObject();
+                //System.out.println("" + received.getBullets() + "," + received.getPlayers() + "," + received.getTerrain());
+                //System.out.println(received.getPlayers()[0]);
+                //if (received.getPlayers()[0] != null) System.out.println(received.getPlayers()[0].getTank());
+                bullets = received.getBullets();
+                players = received.getPlayers();
+                if (received.getTerrain() != null) {
+                    terrain = received.getTerrain();
+                }
+            } catch (IOException | ClassNotFoundException e) {
+                //e.printStackTrace();
+            }
+        }
+        clock.start();
+    }
+
     public void sendPacket(){
+
         try{
             ClientPacket packet = new ClientPacket(keyPressed, isKeyPressedValid,keyReleased,isKeyReleasedValid,mouseX,mouseY,isMouseInputValid);
+            isKeyPressedValid = isKeyReleasedValid = isMouseInputValid = false;
+            // System.out.println(packet);
             out.writeObject(packet);
             out.flush();
+            out.reset();
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -97,7 +129,10 @@ public class Client {
     //public void receiveBoard(){}
     public void receivePacket(){
         try {
-            ServerPacket received = (ServerPacket) in.readObject();
+            BoardPacket received = (BoardPacket) in.readObject();
+            //System.out.println("" + received.getBullets() +"," + received.getPlayers()+","+ received.getTerrain());
+            //System.out.println(received.getPlayers()[0]);
+            //if (received.getPlayers()[0] != null) System.out.println(received.getPlayers()[0].getTank());
             bullets = received.getBullets();
             players = received.getPlayers();
             if (received.getTerrain() != null){
@@ -109,16 +144,22 @@ public class Client {
 
     }
     private class Clock implements ActionListener{
+        private int counter;
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            sendPacket();
-            receivePacket();
+            ++counter;
+            if(counter %4== 1) {
+                receivePacket();
+                sendPacket();
+            }
             display.repaint();
         }
     }
 
     public class Display extends JPanel{
         public Display(){
+            addKeyListener(new KeyHandler());
+            addMouseListener(new MouseHandler());
             setFocusable(true);
             //setBackground(Color.black);
             setPreferredSize(new Dimension(boardWidth, boardLength));
@@ -126,10 +167,11 @@ public class Client {
 
         private void drawTanks(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
-            for (Player player: players){
-                //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
-                //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
-            }
+            g2.drawImage(TANK2_IMG, players[this_player].getX(), players[this_player].getY(), this);
+            g2.drawImage(TANK1_IMG, players[other_player].getX(), players[other_player].getY(), this);
+
+            //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
+            //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
         }
         private void drawTerrain(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
@@ -152,13 +194,15 @@ public class Client {
         private void drawBullets(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
             for (Bullet bullet: bullets){
-                g2.setColor(bullet.DEFAULT_COLOR);
-                g2.fill(bullet.getShape());
+                g2.drawImage(BULLET_IMG,bullet.getX(),bullet.getY(),this);
+//                g2.setColor(bullet.DEFAULT_COLOR);
+//                g2.fill(bullet.getShape());
             }
         }
         @Override
         public void paintComponent(Graphics g){
             super.paintComponent(g);
+            if (terrain == null) return;
             drawBoard(g);
             drawTerrain(g);
             drawTanks(g);
@@ -196,7 +240,7 @@ public class Client {
 
             }
 
-            }
+        }
 
         @Override
         public void mouseEntered(MouseEvent mouseEvent) {

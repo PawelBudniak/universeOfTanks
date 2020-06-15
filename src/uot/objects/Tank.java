@@ -17,7 +17,7 @@ public class Tank extends RectangularObject implements Serializable {
     public static final Color DEFAULT_COLOR = Color.blue;
 
     private static final double BOUNCE_MODIFIER = 2.5;
-    private static final double SPEED = 0.4;
+    private static final double SPEED = 0.5;
     private static final double SPEED_CAP = 6.0;
     private static final double FRICTION = 0.97;
     private static final long serialVersionUID = 5469024326928012237L;
@@ -280,6 +280,8 @@ public class Tank extends RectangularObject implements Serializable {
 //                ", image=" + image +
 //                ", ammoLeft=" + ammoLeft +
 //                ", healthLeft=" + healthLeft +
+                "x = " + getX() +
+                "y = " + getY() +
                 ", ax=" + ax +
                 ", ay=" + ay +
                 ", actual_dx=" + actual_dx +

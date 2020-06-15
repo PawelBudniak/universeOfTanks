@@ -1,8 +1,10 @@
 package uot.objects;
 
 import java.awt.*;
+import java.io.Serializable;
 
-public abstract class RectangularObject {
+public abstract class RectangularObject implements Serializable {
+    private static final long serialVersionUID = 7277921765177628379L;
     protected Rectangle rectangle;
 
     public boolean collision(RectangularObject other){

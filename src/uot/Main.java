@@ -4,6 +4,7 @@ import uot.objects.*;
 import javax.swing.*;
 import java.awt.*;
 
+import java.awt.event.ActionEvent;
 import java.net.*;
 import java.io.*;
 
@@ -29,9 +30,11 @@ public class Main {
 //        });
 
 
+        System.out.println("siema");
+
 
         try (
-                ServerSocket serverSocket = new ServerSocket(4444);
+                ServerSocket serverSocket = new ServerSocket(4445);
                 Socket clientSocket = serverSocket.accept();
                 ObjectOutputStream out =
                         new ObjectOutputStream(clientSocket.getOutputStream());
@@ -43,11 +46,20 @@ public class Main {
                 ObjectInputStream in =
                         new ObjectInputStream(clientSocket.getInputStream());
         ) {
-            out.writeObject(new ServerPacket(null, null, null));
-            Game game = new Game(500, 500,"Seba","Mati", out, in);
+            //out.writeObject(new ServerPacket(null, null, null));
+            Game game = new Game(500, 500,"Seba","laptok", out, in);
+            game.sendBoard();
             JFrame frame = new GameFrame(game.getDisplay());
             //frame.add(game.getDisplay());
             frame.setVisible(true);
+
+//                game.sendPacket();
+//                game.receivePacket();
+
+            while (true){
+                //game.receivePacket();
+                //game.sendPacket();
+            }
 
 
 //            String inputLine, outputLine;
