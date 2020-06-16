@@ -55,5 +55,21 @@ public class Player implements Serializable {
     public Rectangle getShape() { return tank.getShape(); }
     public boolean isOriginOf(Bullet b) { return tank.isOriginOf(b); }
 
+    public void setA_pressed(boolean a_pressed) {
+        tank.setA_pressed(a_pressed);
+    }
+
+    public void setW_pressed(boolean w_pressed) {
+        tank.setW_pressed(w_pressed);
+    }
+
+    public void setD_pressed(boolean d_pressed) {
+        tank.setD_pressed(d_pressed);
+    }
+
+    public void setS_pressed(boolean s_pressed) {
+        tank.setS_pressed(s_pressed);
+    }
+
 
 }

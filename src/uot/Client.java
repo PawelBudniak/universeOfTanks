@@ -1,10 +1,10 @@
 package uot;
 
-import uot.objects.Bullet;
 import uot.objects.Terrain;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 import java.awt.event.*;
 import java.io.*;
 import java.net.Socket;
@@ -29,6 +29,7 @@ public class Client {
             JFrame frame = new GameFrame(client.getDisplay());
             frame.setVisible(true);
             while (true){
+                continue;
                 //client.receivePacket();w
             }
 
@@ -48,7 +49,7 @@ public class Client {
 
     private static final int TICK = 15;
     private LinkedList<Terrain> terrain;
-    private LinkedList<Coordinates> bullets;
+    private List<Coordinates> bullets;
     //private Player[] players;
     private int serverTankX;
     private int serverTankY;
@@ -57,14 +58,15 @@ public class Client {
     private static final int boardWidth = 500;
     private static final int boardLength = 500;
     private static final Color TERRAIN_COLOR = Color.DARK_GRAY;
-    private int keyPressed;
-    private int keyReleased;
-    private boolean isKeyPressedValid;
-    private boolean isKeyReleasedValid;
+    private boolean a_pressed;
+    private boolean w_pressed;
+    private boolean d_pressed;
+    private boolean s_pressed;
     private int mouseX;
     private int mouseY;
     private boolean isMouseInputValid;
     private Timer clock;
+    private Timer networkClock;
     private static final String P1_PATH = "src/uot/objects/images/blue tank.png";
     private static final String P2_PATH = "src/uot/objects/images/red tank.png";
     private static final String BL_PATH = "src/uot/objects/images/bullet.png";
@@ -92,6 +94,10 @@ public class Client {
         //receivePacket(); // get initial board state
         display = new Display();
         clock  = new Timer(TICK, new Clock());
+        networkClock = new Timer (40, (ActionEvent) -> {
+            sendPacket();
+            receivePacket();
+        });
     }
 
     public Display getDisplay() {
@@ -113,13 +119,15 @@ public class Client {
             }
         }
         clock.start();
+        networkClock.start();
+
     }
 
     public void sendPacket(){
 
         try{
-            ClientPacket packet = new ClientPacket(keyPressed, isKeyPressedValid,keyReleased,isKeyReleasedValid,mouseX,mouseY,isMouseInputValid);
-            isKeyPressedValid = isKeyReleasedValid = isMouseInputValid = false;
+            ClientPacket packet = new ClientPacket(a_pressed, w_pressed, d_pressed, s_pressed, mouseY, mouseY, isMouseInputValid);
+            isMouseInputValid = false;
             // System.out.println(packet);
             out.writeObject(packet);
             out.flush();
@@ -211,16 +219,47 @@ public class Client {
             drawBullets(g);
         }
     }
+
+
+
+
+
     private class KeyHandler extends KeyAdapter {
         @Override
-        public void keyPressed(KeyEvent e){
-            keyPressed = e.getKeyCode();
-            isKeyPressedValid = true;
+        public void keyPressed(KeyEvent e ){
+            int keyCode = e.getKeyCode();
+            switch(keyCode){
+                case KeyEvent.VK_W:
+                    w_pressed = true;
+                    break;
+                case KeyEvent.VK_A:
+                    a_pressed = true;
+                    break;
+                case KeyEvent.VK_D:
+                    d_pressed = true;
+                    break;
+                case KeyEvent.VK_S:
+                    s_pressed = true;
+                    break;
+            }
         }
         @Override
-        public void keyReleased(KeyEvent e){
-            keyReleased = e.getKeyCode();
-            isKeyReleasedValid = true;
+        public void  keyReleased(KeyEvent e ){
+            int keyCode = e.getKeyCode();
+            switch(keyCode){
+                case KeyEvent.VK_W:
+                    w_pressed = false;
+                    break;
+                case KeyEvent.VK_S:
+                    s_pressed = false;
+                    break;
+                case KeyEvent.VK_A:
+                    a_pressed = false;
+                    break;
+                case KeyEvent.VK_D:
+                    d_pressed = false;
+                    break;
+            }
         }
     }
     private class MouseHandler implements MouseListener {

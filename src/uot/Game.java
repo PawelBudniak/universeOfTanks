@@ -63,7 +63,7 @@ public class Game {
         generateTerrain();
         //sendBoard();
         gameClock = new Timer(TICK, new GameClock());
-        networkClock = new Timer (40, (ActionEvent) -> {
+        networkClock = new Timer (25, (ActionEvent) -> {
             sendPacket();
             receivePacket();
         });
@@ -113,7 +113,7 @@ public class Game {
         try{
             out.writeObject(packet);
             out.flush();
-            out.reset();
+            //out.reset();
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -121,14 +121,14 @@ public class Game {
     public void receivePacket(){
         try {
             ClientPacket packet = (ClientPacket) in.readObject();
-            if (packet.isKeyPressedValid()){
-                players[other_player].keyPressed(packet.getKeyPressed());
-            }
-            if (packet.isKeyReleasedValid()){
-                players[other_player].keyReleased(packet.getKeyReleased());
-            }
+            Player player2 = players[other_player];
+            player2.setW_pressed(packet.isW_pressed());
+            player2.setA_pressed(packet.isA_pressed());
+            player2.setD_pressed(packet.isD_pressed());
+            player2.setS_pressed(packet.isS_pressed());
+
             if (packet.isMouseInputValid()){
-                Bullet bullet = players[other_player].shoot(packet.getMouseX(), packet.getMouseY());
+                Bullet bullet = player2.shoot(packet.getMouseX(), packet.getMouseY());
                 if (bullet != null)
                     bullets.add(bullet);
             }

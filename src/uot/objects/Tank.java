@@ -265,9 +265,21 @@ public class Tank extends RectangularObject implements Serializable {
         return healthLeft;
     }
 
-//    public Image getImage(){
-//        return image;
-//    }
+    public void setA_pressed(boolean a_pressed) {
+        this.a_pressed = a_pressed;
+    }
+
+    public void setW_pressed(boolean w_pressed) {
+        this.w_pressed = w_pressed;
+    }
+
+    public void setD_pressed(boolean d_pressed) {
+        this.d_pressed = d_pressed;
+    }
+
+    public void setS_pressed(boolean s_pressed) {
+        this.s_pressed = s_pressed;
+    }
 
     @Override
     public String toString() {

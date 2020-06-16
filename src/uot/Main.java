@@ -46,6 +46,8 @@ public class Main {
                 ObjectInputStream in =
                         new ObjectInputStream(clientSocket.getInputStream());
         ) {
+            clientSocket.setTcpNoDelay(true);
+            System.out.println(clientSocket.getSendBufferSize());
             //out.writeObject(new ServerPacket(null, null, null));
             Game game = new Game(500, 500,"Seba","laptok", out, in);
             game.sendBoard();
