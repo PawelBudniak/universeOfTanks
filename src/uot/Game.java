@@ -110,9 +110,14 @@ public class Game {
         bullets.forEach(bullet -> coords.add(new Coordinates(bullet.getX(), bullet.getY())));
         ServerPacket packet = new ServerPacket(players[this_player].getX(), players[this_player].getY(),
                                         players[other_player].getX(), players[other_player].getY(), coords, isOver);
+
         try{
             out.writeObject(packet);
             out.flush();
+            if (isOver) {
+                System.out.println("GAME OVER SENT");
+                networkClock.stop();
+            }
             //out.reset();
         }catch (IOException e){
             e.printStackTrace();
@@ -166,7 +171,7 @@ public class Game {
     }
 
     public boolean isOver() {
-        return isOver;
+        return isOver && networkClock == null || !networkClock.isRunning();
     }
 
     private class GameClock implements ActionListener{
@@ -186,12 +191,9 @@ public class Game {
                             double hp = player.hit(bullet);
                             if (hp <= 0) {
                                 System.out.println(player.getName() + " loses!");
-                                if (networkClock != null)
-                                    networkClock.stop();
                                 isOver = true;
                                 display.repaint();
-                                if (networkClock != null)
-                                    sendPacket();
+                                return;
                             }
 
                             iBullet.remove();

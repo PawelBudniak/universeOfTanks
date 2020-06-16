@@ -154,8 +154,10 @@ public class Client {
             clientTankX = received.getClientTankX();
             clientTankY = received.getClientTankY();
             gameOver = received.isGameOver();
-            if (gameOver)
+            if (gameOver) {
+                display.repaint();
                 gameOver();
+            }
 
         }catch (IOException | ClassNotFoundException e){
             e.printStackTrace();
@@ -237,10 +239,12 @@ public class Client {
             if (terrain == null) return;
             if (isGameOver())
                 drawGameOver(g);
-            drawBoard(g);
-            drawTerrain(g);
-            drawTanks(g);
-            drawBullets(g);
+            else {
+                drawBoard(g);
+                drawTerrain(g);
+                drawTanks(g);
+                drawBullets(g);
+            }
         }
     }
 
