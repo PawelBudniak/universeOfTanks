@@ -22,8 +22,9 @@ public class Client {
                 Socket clientSocket = new Socket(hostName, portNumber);
                 ObjectOutputStream out =
                         new ObjectOutputStream(clientSocket.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream((clientSocket.getInputStream()))
+                ObjectInputStream in = new ObjectInputStream( (clientSocket.getInputStream()))
         ) {
+            clientSocket.setTcpNoDelay(true);
             Client client = new Client(out, in);
             client.receiveBoard();
             JFrame frame = new GameFrame(client.getDisplay());
@@ -94,7 +95,7 @@ public class Client {
         //receivePacket(); // get initial board state
         display = new Display();
         clock  = new Timer(TICK, new Clock());
-        networkClock = new Timer (40, (ActionEvent) -> {
+        networkClock = new Timer (25, (ActionEvent) -> {
             sendPacket();
             receivePacket();
         });
@@ -115,7 +116,7 @@ public class Client {
                     terrain = received.getTerrain();
                 }
             } catch (IOException | ClassNotFoundException e) {
-                //e.printStackTrace();
+                e.printStackTrace();
             }
         }
         clock.start();
@@ -126,23 +127,20 @@ public class Client {
     public void sendPacket(){
 
         try{
-            ClientPacket packet = new ClientPacket(a_pressed, w_pressed, d_pressed, s_pressed, mouseY, mouseY, isMouseInputValid);
+            ClientPacket packet = new ClientPacket(a_pressed, w_pressed, d_pressed, s_pressed, mouseX, mouseY, isMouseInputValid);
             isMouseInputValid = false;
             // System.out.println(packet);
             out.writeObject(packet);
             out.flush();
-            out.reset();
+            //out.reset();
         }catch (IOException e){
             e.printStackTrace();
         }
     }
-    //public void receiveBoard(){}
+
     public void receivePacket(){
         try {
             ServerPacket received = (ServerPacket) in.readObject();
-            //System.out.println("" + received.getBullets() +"," + received.getPlayers()+","+ received.getTerrain());
-            //System.out.println(received.getPlayers()[0]);
-            //if (received.getPlayers()[0] != null) System.out.println(received.getPlayers()[0].getTank());
             bullets = received.getBullets();
             serverTankX = received.getServerTankX();
             serverTankY = received.getServerTankY();
@@ -157,11 +155,11 @@ public class Client {
         private int counter;
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            ++counter;
-            if(counter %4== 1) {
-                receivePacket();
-                sendPacket();
-            }
+//            ++counter;
+//            if(counter %4== 1) {
+//                receivePacket();
+//                sendPacket();
+//            }
             display.repaint();
         }
     }
