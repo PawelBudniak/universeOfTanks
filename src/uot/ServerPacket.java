@@ -1,7 +1,6 @@
 package uot;
 
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
 
 public class ServerPacket implements Serializable {
@@ -12,13 +11,15 @@ public class ServerPacket implements Serializable {
     private int clientTankX;
     private int clientTankY;
     private List<Coordinates> bullets;
+    private boolean gameOver;
 
-    public ServerPacket(int serverTankX, int serverTankY, int clientTankX, int clientTankY, List<Coordinates> bullets) {
+    public ServerPacket(int serverTankX, int serverTankY, int clientTankX, int clientTankY, List<Coordinates> bullets, boolean gameOver) {
         this.serverTankX = serverTankX;
         this.serverTankY = serverTankY;
         this.clientTankX = clientTankX;
         this.clientTankY = clientTankY;
         this.bullets = bullets;
+        this.gameOver = gameOver;
     }
 
     public static long getSerialVersionUID() {
@@ -45,6 +46,7 @@ public class ServerPacket implements Serializable {
         return bullets;
     }
 
+    public boolean isGameOver() { return gameOver; }
 
     @Override
     public String toString() {
@@ -54,6 +56,7 @@ public class ServerPacket implements Serializable {
                 ", clientTankX=" + clientTankX +
                 ", clientTankY=" + clientTankY +
                 ", bullets=" + bullets +
+                ", isOver=" + gameOver +
                 '}';
     }
 }

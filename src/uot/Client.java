@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class Client {
 
@@ -29,8 +30,8 @@ public class Client {
             client.receiveBoard();
             JFrame frame = new GameFrame(client.getDisplay());
             frame.setVisible(true);
-            while (true){
-                continue;
+            while (!client.isGameOver()){
+                ;
                 //client.receivePacket();w
             }
 
@@ -48,17 +49,14 @@ public class Client {
     private ObjectOutputStream out;
     private ObjectInputStream in;
 
-    private static final int TICK = 15;
     private LinkedList<Terrain> terrain;
     private List<Coordinates> bullets;
-    //private Player[] players;
     private int serverTankX;
     private int serverTankY;
     private int clientTankY;
     private int clientTankX;
-    private static final int boardWidth = 500;
-    private static final int boardLength = 500;
-    private static final Color TERRAIN_COLOR = Color.DARK_GRAY;
+    private boolean gameOver;
+
     private boolean a_pressed;
     private boolean w_pressed;
     private boolean d_pressed;
@@ -66,11 +64,10 @@ public class Client {
     private int mouseX;
     private int mouseY;
     private boolean isMouseInputValid;
+
     private Timer clock;
     private Timer networkClock;
-    private static final String P1_PATH = "src/uot/objects/images/blue tank.png";
-    private static final String P2_PATH = "src/uot/objects/images/red tank.png";
-    private static final String BL_PATH = "src/uot/objects/images/bullet.png";
+
     private static final Image BULLET_IMG;
     private static final Image TANK1_IMG;
     private static final Image TANK2_IMG;
@@ -78,12 +75,13 @@ public class Client {
     private final int this_player = 1;
     private final int other_player = 0;
 
+
     static{
-        ImageIcon i = new ImageIcon(P1_PATH);
+        ImageIcon i = new ImageIcon(Game.TANK1_PATH);
         TANK1_IMG = i.getImage();
-        i = new ImageIcon(P2_PATH);
+        i = new ImageIcon(Game.TANK2_PATH);
         TANK2_IMG = i.getImage();
-        i = new ImageIcon(BL_PATH);
+        i = new ImageIcon(Game.BL_PATH);
         BULLET_IMG = i.getImage();
     }
 
@@ -94,8 +92,8 @@ public class Client {
         terrain = null;
         //receivePacket(); // get initial board state
         display = new Display();
-        clock  = new Timer(TICK, new Clock());
-        networkClock = new Timer (25, (ActionEvent) -> {
+        clock  = new Timer(Game.TICK, new Clock());
+        networkClock = new Timer (Game.NET_TICK, (ActionEvent) -> {
             sendPacket();
             receivePacket();
         });
@@ -103,6 +101,10 @@ public class Client {
 
     public Display getDisplay() {
         return display;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
     }
 
     public void receiveBoard(){
@@ -138,6 +140,11 @@ public class Client {
         }
     }
 
+    private void gameOver(){
+        networkClock.stop();
+    }
+
+
     public void receivePacket(){
         try {
             ServerPacket received = (ServerPacket) in.readObject();
@@ -146,6 +153,10 @@ public class Client {
             serverTankY = received.getServerTankY();
             clientTankX = received.getClientTankX();
             clientTankY = received.getClientTankY();
+            gameOver = received.isGameOver();
+            if (gameOver)
+                gameOver();
+
         }catch (IOException | ClassNotFoundException e){
             e.printStackTrace();
         }
@@ -170,7 +181,7 @@ public class Client {
             addMouseListener(new MouseHandler());
             setFocusable(true);
             //setBackground(Color.black);
-            setPreferredSize(new Dimension(boardWidth, boardLength));
+            setPreferredSize(new Dimension(Game.BOARD_WIDTH, Game.BOARD_LENGTH));
         }
 
         private void drawTanks(Graphics g){
@@ -185,13 +196,26 @@ public class Client {
             Graphics2D g2 = (Graphics2D) g;
             for (Terrain block: terrain){
                 //g2.drawImage(block.getImage(),block.getX(),block.getY(),this);
-                g2.setColor(TERRAIN_COLOR);
+                g2.setColor(Game.TERRAIN_COLOR);
                 g2.fill(block.getShape());
 
             }
         }
 
-        public void drawBoard(Graphics g){
+        private void drawGameOver(Graphics g){
+            clock.stop();
+            Graphics2D g2 = (Graphics2D) g;
+            String msg = "Game Over";
+            Font font = new Font("MS Gothic",Font.BOLD, 35);
+            FontMetrics metrics =  getDisplay().getFontMetrics(font);
+
+            g2.setColor(Color.pink);
+            g2.setFont(font);
+            g2.drawString(msg,(Game.BOARD_WIDTH-metrics.stringWidth(msg))/2,Game.BOARD_LENGTH/2);
+
+        }
+
+        private void drawBoard(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
             var terrainImage = "src/uot/objects/images/ground2.png";
             var ii = new ImageIcon(terrainImage);
@@ -211,6 +235,8 @@ public class Client {
         public void paintComponent(Graphics g){
             super.paintComponent(g);
             if (terrain == null) return;
+            if (isGameOver())
+                drawGameOver(g);
             drawBoard(g);
             drawTerrain(g);
             drawTanks(g);
@@ -272,7 +298,7 @@ public class Client {
 
         @Override
         public void mouseReleased(MouseEvent mouseEvent) {
-            if (mouseEvent.getButton() == mouseEvent.BUTTON1) {
+            if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
                 mouseX = mouseEvent.getX();
                 mouseY = mouseEvent.getY();
                 isMouseInputValid = true;

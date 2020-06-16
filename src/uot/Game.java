@@ -11,21 +11,25 @@ import java.util.Random;
 
 
 public class Game {
-    private static final int TICK = 15;
     private static final int TANK_LEN = 36;
     private static final int TANK_WID = 54;
     private static final int START_X = 80;
-    private static final String P1_PATH = "src/uot/objects/images/blue tank.png";
-    private static final String P2_PATH = "src/uot/objects/images/red tank.png";
-    private static final String BL_PATH = "src/uot/objects/images/bullet.png";
+
+    static final int TICK = 15;
+    static final int NET_TICK = 25;
+    static final String TANK1_PATH = "src/uot/objects/images/blue tank.png";
+    static final String TANK2_PATH = "src/uot/objects/images/red tank.png";
+    static final String BL_PATH = "src/uot/objects/images/bullet.png";
+    static final int BOARD_WIDTH = 500;
+    static final int BOARD_LENGTH = 500;
+    static final Color TERRAIN_COLOR = Color.DARK_GRAY;
+
+
     private static final Image BULLET_IMG;
     private static final Image TANK1_IMG;
     private static final Image TANK2_IMG;
 
-    private static final Color TERRAIN_COLOR = Color.DARK_GRAY;
     public static final int N_TERRAIN_BLOCKS = 8;
-    private final int boardLength;
-    private final int boardWidth;
     private Timer gameClock;
     private Timer networkClock;
     private LinkedList<Terrain> terrain;
@@ -33,51 +37,47 @@ public class Game {
     private Player[] players;
     private int this_player = 0;
     private int other_player = 1;
-    //Player player1;
-    //Player player2;
     private final Display display;
     private ObjectOutputStream out;
     private ObjectInputStream in;
     private boolean isOver;
 
     static{
-        ImageIcon i = new ImageIcon(P1_PATH);
+        ImageIcon i = new ImageIcon(TANK1_PATH);
         TANK1_IMG = i.getImage();
-        i = new ImageIcon(P2_PATH);
+        i = new ImageIcon(TANK2_PATH);
         TANK2_IMG = i.getImage();
         i = new ImageIcon(BL_PATH);
         BULLET_IMG = i.getImage();
     }
 
-    public Game(int boardLength, int boardWidth, String p1_nick, String p2_nick){
+    public Game(String p1_nick, String p2_nick){
         this.terrain = new LinkedList<>();
         this.bullets = new LinkedList<>();
-        this.boardWidth = boardWidth;
-        this.boardLength = boardLength;
         players = new Player[2];
         players[0] = new Player(p1_nick,
-                new Tank.Builder(START_X, boardLength/2, TANK_WID, TANK_LEN).build());
+                new Tank.Builder(START_X, BOARD_LENGTH /2, TANK_WID, TANK_LEN).ammoCapacity(6).reloadTime(800).build());
         players[1] = new Player(p2_nick,
-                new Tank.Builder(boardLength - START_X, boardLength/2, TANK_WID, TANK_LEN).build());
+                new Tank.Builder(BOARD_LENGTH - START_X, BOARD_LENGTH /2, TANK_WID, TANK_LEN).ammoCapacity(6).reloadTime(800).build());
         generateWalls();
         generateTerrain();
         //sendBoard();
         gameClock = new Timer(TICK, new GameClock());
-        networkClock = new Timer (25, (ActionEvent) -> {
-            sendPacket();
-            receivePacket();
-        });
         this.display = new Display();
         display.addKeyListener(new KeyHandler());
         display.addMouseListener(new MouseHandler());
         gameClock.start();
-        networkClock.start();
     }
 
-    public Game(int boardLength, int boardWidth, String p1_nick, String p2_nick, ObjectOutputStream out, ObjectInputStream in){
-        this(boardLength, boardWidth, p1_nick, p2_nick);
+    public Game(String p1_nick, String p2_nick, ObjectOutputStream out, ObjectInputStream in){
+        this(p1_nick, p2_nick);
         this.in = in;
         this.out = out;
+        networkClock = new Timer(NET_TICK, (ActionEvent) -> {
+            sendPacket();
+            receivePacket();
+        });
+        networkClock.start();
     }
 
     public void sendBoard() {
@@ -86,7 +86,7 @@ public class Game {
         try{
             out.writeObject(packet);
             out.flush();
-            out.reset();
+            //out.reset();
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -109,7 +109,7 @@ public class Game {
         LinkedList<Coordinates> coords = new LinkedList<>();
         bullets.forEach(bullet -> coords.add(new Coordinates(bullet.getX(), bullet.getY())));
         ServerPacket packet = new ServerPacket(players[this_player].getX(), players[this_player].getY(),
-                                        players[other_player].getX(), players[other_player].getY(), coords);
+                                        players[other_player].getX(), players[other_player].getY(), coords, isOver);
         try{
             out.writeObject(packet);
             out.flush();
@@ -144,7 +144,7 @@ public class Game {
         for (int i = 0; i < N_TERRAIN_BLOCKS; i++) {
             Terrain new_block;
             do{
-                new_block = new Terrain(random.nextInt(boardWidth), random.nextInt(boardLength));
+                new_block = new Terrain(random.nextInt(BOARD_WIDTH), random.nextInt(BOARD_LENGTH));
             }while(players[0].collision(new_block) || players[1].collision(new_block));
             terrain.add(new_block);
         }
@@ -154,10 +154,10 @@ public class Game {
     private void generateWalls(){
         // najpierw dam 5 px szerokosci pozniej mozna zminiejszyc /zwiekszyc
         final int WALL_WIDTH = 10;
-        terrain.add(new Terrain(0,0, boardWidth, WALL_WIDTH));                               // upper
-        terrain.add(new Terrain(0,0, WALL_WIDTH, boardLength));                              // left
-        terrain.add(new Terrain(boardWidth - WALL_WIDTH,0, WALL_WIDTH, boardLength));        // right
-        terrain.add(new Terrain(0, boardLength - WALL_WIDTH, boardWidth, WALL_WIDTH));       // bottom
+        terrain.add(new Terrain(0,0, BOARD_WIDTH, WALL_WIDTH));                               // upper
+        terrain.add(new Terrain(0,0, WALL_WIDTH, BOARD_LENGTH));                              // left
+        terrain.add(new Terrain(BOARD_WIDTH - WALL_WIDTH,0, WALL_WIDTH, BOARD_LENGTH));        // right
+        terrain.add(new Terrain(0, BOARD_LENGTH - WALL_WIDTH, BOARD_WIDTH, WALL_WIDTH));       // bottom
     }
 
 
@@ -165,6 +165,9 @@ public class Game {
         return display;
     }
 
+    public boolean isOver() {
+        return isOver;
+    }
 
     private class GameClock implements ActionListener{
         private int counter;
@@ -172,7 +175,6 @@ public class Game {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             // bullets <-> players collisions
-            //receivePacket();
 
             for (Iterator<Bullet> iBullet = bullets.iterator(); iBullet.hasNext(); ) {
                 Bullet bullet = iBullet.next();
@@ -180,17 +182,18 @@ public class Game {
                 for (Player player : players) {
                     if (!player.isOriginOf(bullet))
                         if (player.collision(bullet)) {
-                            //
-                            // System.out.println("bullet-player");
+
                             double hp = player.hit(bullet);
-                            System.out.println(player.getName() + " hp: " + hp);
                             if (hp <= 0) {
                                 System.out.println(player.getName() + " loses!");
-                                networkClock.stop();
+                                if (networkClock != null)
+                                    networkClock.stop();
                                 isOver = true;
-                                sendPacket();
-                                gameClock.stop();
+                                display.repaint();
+                                if (networkClock != null)
+                                    sendPacket();
                             }
+
                             iBullet.remove();
                         }
                 }
@@ -211,16 +214,9 @@ public class Game {
             // players <-> terrain collisions
             bouncePlayerCollisions();
 
-            //players <-> terrain collisions (prevent them beforehand)
-            //preventPlayerCollisions();
-
-
             bullets.forEach(Bullet::move);
 
             display.repaint();
-
-//
-            //sendPacket();
 
         }
         /** wersja z odbijaniem */
@@ -261,7 +257,7 @@ public class Game {
         public Display(){
             setFocusable(true);
             //setBackground(Color.black);
-            setPreferredSize(new Dimension(boardWidth, boardLength));
+            setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_LENGTH));
         }
 
         private void drawTanks(Graphics g){
@@ -292,6 +288,18 @@ public class Game {
             g2.drawImage(image,0,0,this);
         }
 
+        private void drawGameOver(Graphics g){
+            gameClock.stop();
+            String msg = "Game Over";
+            Font font = new Font("MS Gothic",Font.BOLD, 35);
+            FontMetrics metrics =  getDisplay().getFontMetrics(font);
+
+            g.setColor(Color.pink);
+            g.setFont(font);
+            g.drawString(msg,(Game.BOARD_WIDTH-metrics.stringWidth(msg))/2,Game.BOARD_LENGTH/2);
+
+        }
+
         private void drawBullets(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
             for (Bullet bullet: bullets){
@@ -301,10 +309,14 @@ public class Game {
         @Override
         public void paintComponent(Graphics g){
             super.paintComponent(g);
-            drawBoard(g);
-            drawTerrain(g);
-            drawTanks(g);
-            drawBullets(g);
+            if (isOver)
+                drawGameOver(g);
+            else {
+                drawBoard(g);
+                drawTerrain(g);
+                drawTanks(g);
+                drawBullets(g);
+            }
         }
     }
 

@@ -8,19 +8,21 @@ import java.lang.*;
 
 public class Tank extends RectangularObject implements Serializable {
 
+    private static final long serialVersionUID = 5469024326928012237L;
 
     public static final double DEFAULT_HEALTH = 300.0;
     public static final int DEFAULT_RELOAD_TIME = 500;
     /** How many times can the tank shoot continuously before having to reload */
     public static final int DEFAULT_AMMO_CAPACITY = 5;
-    public static final String DEFAULT_PATH = "src/images.blue tank.png";
     public static final Color DEFAULT_COLOR = Color.blue;
 
     private static final double BOUNCE_MODIFIER = 2.5;
     private static final double SPEED = 0.5;
     private static final double SPEED_CAP = 6.0;
     private static final double FRICTION = 0.97;
-    private static final long serialVersionUID = 5469024326928012237L;
+
+    private Timer reloadTimer;
+
 
     /** tank parameters */
     private final double maxHealth;
@@ -39,7 +41,6 @@ public class Tank extends RectangularObject implements Serializable {
     private double actual_dy;   // approximate change in the x direction each tick
     private double prev_x;
     private double prev_y;
-    private Timer reloadTimer;
     private boolean a_pressed;
     private boolean w_pressed;
     private boolean d_pressed;
@@ -52,7 +53,6 @@ public class Tank extends RectangularObject implements Serializable {
             return new Bullet(getX(), getY(), x, y, this);
         }
         else {
-            System.out.println("No ammo");
             return null;
         }
     }
@@ -60,7 +60,7 @@ public class Tank extends RectangularObject implements Serializable {
     public boolean isOriginOf(Bullet b){
         return b.getOrigin() == this;
     }
-    // experymentalne
+
     public void bounce(RectangularObject from) {
 
         // object on the right
@@ -81,8 +81,6 @@ public class Tank extends RectangularObject implements Serializable {
         }
         // last ditch effort
         else{
-            System.out.println(this);
-            //System.out.println(from);
             actual_dx = -BOUNCE_MODIFIER * actual_dx;
             actual_dy = -BOUNCE_MODIFIER * actual_dy;
         }
@@ -196,7 +194,6 @@ public class Tank extends RectangularObject implements Serializable {
         private int reloadTime = DEFAULT_RELOAD_TIME;
         private int ammoCapacity = DEFAULT_AMMO_CAPACITY;
         private Color color = DEFAULT_COLOR;
-        private Image image;
 
         public Builder(Rectangle r){
             this.rectangle = new Rectangle(r);
@@ -219,11 +216,6 @@ public class Tank extends RectangularObject implements Serializable {
         public Builder color(Color val){
             color = val;        return this;
         }
-//        public Builder image(String path ){
-//            var ii = new ImageIcon(path);
-//            image  = ii.getImage();
-//            return this;
-//        }
         public Tank build(){
             return new Tank(this);
         }

@@ -7,90 +7,63 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.net.*;
 import java.io.*;
+import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) {
-//        Tank t = new Tank.Builder(10, 10, 300 ,400).maxHealth(20.3).ammoCapacity(4).color(Color.BLACK).build();
-//        Bullet b = new Bullet(10,10,15,60, t);
-//
-//        for(int i = 0; i<=100;i++)
-//        {
-//            b.move();
-//            System.out.println("lokalizacja: "+ b.getX()+ " " + b.getY());
 
+        System.out.println("Press 1 for testing in single player mode, press 2 for multiplayer");
+        Scanner s = new Scanner(System.in);
+        int choice = s.nextInt();
+        if (choice == 1)
+            singlePlayer();
+        else if (choice == 2)
+            multiPlayer();
 
-//        }
+    }
 
-//        EventQueue.invokeLater(()->
-//        {
-//            Game game = new Game(500, 500, "mati", "seba");
-//            JFrame frame = new GameFrame(game.getDisplay());
-//            frame.setVisible(true);
-//        });
+    private static void singlePlayer(){
+        EventQueue.invokeLater(()->
+        {
+            Game game = new Game("mati", "seba");
+            JFrame frame = new GameFrame(game.getDisplay());
+            frame.setVisible(true);
+        });
 
-
-        System.out.println("siema");
-
+    }
+    private static void multiPlayer(){
+        final int port = 4445;
 
         try (
-                ServerSocket serverSocket = new ServerSocket(4445);
+                ServerSocket serverSocket = new ServerSocket(port);
                 Socket clientSocket = serverSocket.accept();
+//                ObjectOutputStream out =
+//                        new ObjectOutputStream(new BufferedOutputStream(clientSocket.getOutputStream(), 65356));
+//                ObjectInputStream in =
+//                        new ObjectInputStream(new BufferedInputStream(clientSocket.getInputStream(), 65356))
                 ObjectOutputStream out =
                         new ObjectOutputStream(clientSocket.getOutputStream());
-
-//                PrintWriter out =
-//                        new PrintWriter(clientSocket.getOutputStream(), true);
-//                BufferedReader in = new BufferedReader(
-//                        new InputStreamReader(clientSocket.getInputStream()));
                 ObjectInputStream in =
-                        new ObjectInputStream(clientSocket.getInputStream());
+                        new ObjectInputStream(clientSocket.getInputStream())
         ) {
             clientSocket.setTcpNoDelay(true);
             System.out.println(clientSocket.getSendBufferSize());
             //out.writeObject(new ServerPacket(null, null, null));
-            Game game = new Game(500, 500,"Seba","laptok", out, in);
+            Game game = new Game("Seba","laptok", out, in);
             game.sendBoard();
             JFrame frame = new GameFrame(game.getDisplay());
-            //frame.add(game.getDisplay());
             frame.setVisible(true);
 
-//                game.sendPacket();
-//                game.receivePacket();
 
-            while (true){
-                //game.receivePacket();
-                //game.sendPacket();
+            while (!game.isOver()){
+                ;
             }
-
-
-//            String inputLine, outputLine;
-//
-//            // Initiate conversation with client
-//            System.out.println("przed");
-//            out.println("siema tutej serwer here");
-//            out.println("wiad 2");
-//
-//            while ((inputLine = in.()) != null) {
-//                System.out.println("weszlem");
-//
-//                outputLine = inputLine;
-//                out.println(outputLine);
-//                System.out.println(outputLine);
-//                int input = Integer.parseInt(inputLine);
-//                game.getInput(input, input);
-//
-//                if (outputLine.equals("Bye."))
-//                    break;
-//            }
         } catch (IOException e) {
             System.out.println("Exception caught when trying to listen on port "
-                    + 4444 + " or listening for a connection");
+                    + port + " or listening for a connection");
             System.out.println(e.getMessage());
         }
-
-
-        System.out.println("Test");
-	// write your code here
     }
+
 }
