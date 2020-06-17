@@ -13,6 +13,9 @@ public class Main {
 
     public static void main(String[] args) {
 
+        JFrame frame = new OptionFrame();
+
+  /*
         System.out.println("Press 1 for testing in single player mode, press 2 for multiplayer");
         Scanner s = new Scanner(System.in);
         int choice = s.nextInt();
@@ -63,7 +66,7 @@ public class Main {
             System.out.println("Exception caught when trying to listen on port "
                     + port + " or listening for a connection");
             System.out.println(e.getMessage());
-        }
+        }*/
     }
 
 }
