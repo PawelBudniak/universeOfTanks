@@ -214,8 +214,6 @@ public class Client {
                 if(i>3)
                     g2.drawImage(ROCK_IMG,block.getX(),block.getY(),this);
                 i++;
-                g2.setColor(Game.TERRAIN_COLOR);
-                g2.fill(block.getShape());
 
             }
         }
@@ -245,8 +243,6 @@ public class Client {
             Graphics2D g2 = (Graphics2D) g;
             for (Coordinates bullet: bullets){
                 g2.drawImage(BULLET_IMG,bullet.getX(),bullet.getY(),this);
-//                g2.setColor(bullet.DEFAULT_COLOR);
-//                g2.fill(bullet.getShape());
             }
         }
         @Override

@@ -185,7 +185,7 @@ public class Game {
     }
 
     public boolean isOver() {
-        return isOver && networkClock == null || !networkClock.isRunning();
+        return isOver && (networkClock == null || !networkClock.isRunning());
     }
 
     private class GameClock implements ActionListener{

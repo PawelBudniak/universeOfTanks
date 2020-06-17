@@ -36,9 +36,7 @@ public class Player implements Serializable {
     public Bullet shoot(int x, int y){
         return tank.shoot(x,y);
     }
-    public void move(){
-        tank.move();
-    }
+    public void move(){ tank.move(); }
     public boolean willCollide(RectangularObject obj){
         return tank.willCollide(obj);
     }
@@ -71,5 +69,23 @@ public class Player implements Serializable {
         tank.setS_pressed(s_pressed);
     }
 
+    public double getMaxHealth() {
+        return tank.getMaxHealth();
+    }
 
+    public int getReloadTime() {
+        return tank.getReloadTime();
+    }
+
+    public int getAmmoCapacity() {
+        return tank.getAmmoCapacity();
+    }
+
+    public int getAmmoLeft() {
+        return tank.getAmmoLeft();
+    }
+
+    public double getHealthLeft() {
+        return tank.getHealthLeft();
+    }
 }
