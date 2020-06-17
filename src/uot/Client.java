@@ -71,6 +71,9 @@ public class Client {
     private static final Image BULLET_IMG;
     private static final Image TANK1_IMG;
     private static final Image TANK2_IMG;
+    private static final Image ROCK_IMG;
+    private static final Image SIDE_IMG;
+    private static final Image HORIZ_IMG;
     private Display display;
     private final int this_player = 1;
     private final int other_player = 0;
@@ -83,6 +86,12 @@ public class Client {
         TANK2_IMG = i.getImage();
         i = new ImageIcon(Game.BL_PATH);
         BULLET_IMG = i.getImage();
+        i = new ImageIcon(Game.ROCK_PATH);
+        ROCK_IMG = i.getImage();
+        i = new ImageIcon(Game.SIDE_PATH);
+        SIDE_IMG = i.getImage();
+        i = new ImageIcon(Game.HORIZ_PATH);
+        HORIZ_IMG = i.getImage();
     }
 
 
@@ -196,8 +205,15 @@ public class Client {
         }
         private void drawTerrain(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
+            int i = 0;
             for (Terrain block: terrain){
-                //g2.drawImage(block.getImage(),block.getX(),block.getY(),this);
+                if(i<=1)
+                g2.drawImage(HORIZ_IMG,block.getX(),block.getY(),this);
+                if(i<=3)
+                    g2.drawImage(SIDE_IMG,block.getX(),block.getY(),this);
+                if(i>3)
+                    g2.drawImage(ROCK_IMG,block.getX(),block.getY(),this);
+                i++;
                 g2.setColor(Game.TERRAIN_COLOR);
                 g2.fill(block.getShape());
 
