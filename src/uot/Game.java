@@ -20,6 +20,9 @@ public class Game {
     static final String TANK1_PATH = "src/uot/objects/images/blue tank.png";
     static final String TANK2_PATH = "src/uot/objects/images/red tank.png";
     static final String BL_PATH = "src/uot/objects/images/bullet.png";
+    static final String ROCK_PATH = "src/uot/objects/images/rock.png";
+    static final String HORIZ_PATH = "src/uot/objects/images/horizontal wall.png";
+    static final String SIDE_PATH = "src/uot/objects/images/side wall.png";
     static final int BOARD_WIDTH = 500;
     static final int BOARD_LENGTH = 500;
     static final Color TERRAIN_COLOR = Color.DARK_GRAY;
@@ -28,6 +31,9 @@ public class Game {
     private static final Image BULLET_IMG;
     private static final Image TANK1_IMG;
     private static final Image TANK2_IMG;
+    private static final Image ROCK_IMG;
+    private static final Image HORIZ_IMG;
+    private static final Image SIDE_IMG;
 
     public static final int N_TERRAIN_BLOCKS = 8;
     private Timer gameClock;
@@ -49,6 +55,13 @@ public class Game {
         TANK2_IMG = i.getImage();
         i = new ImageIcon(BL_PATH);
         BULLET_IMG = i.getImage();
+        i = new ImageIcon(ROCK_PATH);
+        ROCK_IMG = i.getImage();
+        i = new ImageIcon(HORIZ_PATH);
+        HORIZ_IMG = i.getImage();
+        i = new ImageIcon(SIDE_PATH);
+        SIDE_IMG = i.getImage();
+
     }
 
     public Game(String p1_nick, String p2_nick){
@@ -159,10 +172,11 @@ public class Game {
     private void generateWalls(){
         // najpierw dam 5 px szerokosci pozniej mozna zminiejszyc /zwiekszyc
         final int WALL_WIDTH = 10;
-        terrain.add(new Terrain(0,0, BOARD_WIDTH, WALL_WIDTH));                               // upper
-        terrain.add(new Terrain(0,0, WALL_WIDTH, BOARD_LENGTH));                              // left
-        terrain.add(new Terrain(BOARD_WIDTH - WALL_WIDTH,0, WALL_WIDTH, BOARD_LENGTH));        // right
+        terrain.add(new Terrain(0,0, BOARD_WIDTH, WALL_WIDTH));                                 // upper
         terrain.add(new Terrain(0, BOARD_LENGTH - WALL_WIDTH, BOARD_WIDTH, WALL_WIDTH));       // bottom
+        terrain.add(new Terrain(0,0, WALL_WIDTH, BOARD_LENGTH));                              // left
+        terrain.add(new Terrain(BOARD_WIDTH - WALL_WIDTH,0, WALL_WIDTH, BOARD_LENGTH));      // right
+
     }
 
 
@@ -274,11 +288,16 @@ public class Game {
         }
         private void drawTerrain(Graphics g){
             Graphics2D g2 = (Graphics2D) g;
+            int i =0;
             for (Terrain block: terrain){
-                //g2.drawImage(block.getImage(),block.getX(),block.getY(),this);
-                g2.setColor(TERRAIN_COLOR);
-                g2.fill(block.getShape());
+                if(i<=1)
+                    g2.drawImage(HORIZ_IMG,block.getX(),block.getY(),this);
+                if(i<=3)
+                    g2.drawImage(SIDE_IMG,block.getX(),block.getY(),this);
+                if(i>3)
+                g2.drawImage(ROCK_IMG,block.getX(),block.getY(),this);
 
+                ++i;
             }
         }
 
