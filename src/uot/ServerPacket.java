@@ -24,9 +24,6 @@ public class ServerPacket implements Serializable {
         this.winner = winner;
     }
 
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
 
     public int getServerTankX() {
         return serverTankX;

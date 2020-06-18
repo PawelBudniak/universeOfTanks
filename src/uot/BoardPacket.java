@@ -4,16 +4,16 @@ import uot.objects.Bullet;
 import uot.objects.Terrain;
 
 import java.io.Serializable;
-import java.util.LinkedList;
+import java.util.List;
 
 public class BoardPacket implements Serializable {
 
     private static final long serialVersionUID = 7030644259386334167L;
     private Player[] players;
-    private LinkedList<Bullet> bullets;
-    private LinkedList<Terrain> terrain;
+    private List<Bullet> bullets;
+    private List<Terrain> terrain;
 
-    public BoardPacket(Player[] players, LinkedList<Bullet> bullets, LinkedList<Terrain> terrain) {
+    public BoardPacket(Player[] players, List<Bullet> bullets, List<Terrain> terrain) {
         this.players = players;
         this.bullets = bullets;
         this.terrain = terrain;
@@ -23,11 +23,11 @@ public class BoardPacket implements Serializable {
         return players;
     }
 
-    public LinkedList<Bullet> getBullets() {
+    public List<Bullet> getBullets() {
         return bullets;
     }
 
-    public LinkedList<Terrain> getTerrain() {
+    public List<Terrain> getTerrain() {
         return terrain;
     }
 }

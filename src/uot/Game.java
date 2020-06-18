@@ -10,62 +10,26 @@ import java.util.LinkedList;
 import java.util.Random;
 
 
-public class Game {
+public class Game extends AbstractEngine{
     private static final int TANK_LEN = 36;
     private static final int TANK_WID = 54;
     private static final int START_X = 80;
 
     static final int TICK = 15;
     static final int NET_TICK = 25;
-    static final String TANK1_PATH = "src/uot/objects/images/blue tank.png";
-    static final String TANK2_PATH = "src/uot/objects/images/red tank.png";
-    static final String BL_PATH = "src/uot/objects/images/bullet.png";
-    static final String ROCK_PATH = "src/uot/objects/images/rock.png";
-    static final String HORIZ_PATH = "src/uot/objects/images/horizontal wall.png";
-    static final String SIDE_PATH = "src/uot/objects/images/side wall.png";
-    static final int BOARD_WIDTH = 500;
-    static final int BOARD_LENGTH = 500;
-    static final Color TERRAIN_COLOR = Color.DARK_GRAY;
-
-
-    private static final Image BULLET_IMG;
-    private static final Image TANK1_IMG;
-    private static final Image TANK2_IMG;
-    private static final Image ROCK_IMG;
-    private static final Image HORIZ_IMG;
-    private static final Image SIDE_IMG;
 
     public static final int N_TERRAIN_BLOCKS = 8;
-    private Timer gameClock;
     private Timer networkClock;
-    private LinkedList<Terrain> terrain;
     private LinkedList<Bullet> bullets;
     private Player[] players;
     private int this_player = 0;
     private int other_player = 1;
-    private final Display display;
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    private boolean isOver;
-    private String winner;
 
-    static{
-        ImageIcon i = new ImageIcon(TANK1_PATH);
-        TANK1_IMG = i.getImage();
-        i = new ImageIcon(TANK2_PATH);
-        TANK2_IMG = i.getImage();
-        i = new ImageIcon(BL_PATH);
-        BULLET_IMG = i.getImage();
-        i = new ImageIcon(ROCK_PATH);
-        ROCK_IMG = i.getImage();
-        i = new ImageIcon(HORIZ_PATH);
-        HORIZ_IMG = i.getImage();
-        i = new ImageIcon(SIDE_PATH);
-        SIDE_IMG = i.getImage();
-
-    }
 
     public Game(String p1_nick, String p2_nick, boolean online){
+        super();
         this.terrain = new LinkedList<>();
         this.bullets = new LinkedList<>();
         this.winner = null;
@@ -76,9 +40,7 @@ public class Game {
                 new Tank.Builder(BOARD_LENGTH - START_X, BOARD_LENGTH /2, TANK_WID, TANK_LEN).ammoCapacity(6).reloadTime(800).build());
         generateWalls();
         generateTerrain();
-        //sendBoard();
         gameClock = new Timer(TICK, new GameClock());
-        this.display = new Display();
         display.addKeyListener(new KeyHandler());
         display.addMouseListener(new MouseHandler());
         if (!online)
@@ -174,10 +136,6 @@ public class Game {
     }
 
 
-    public Display getDisplay() {
-        return display;
-    }
-
     public boolean isOver() {
         return isOver && (networkClock == null || !networkClock.isRunning());
     }
@@ -234,7 +192,7 @@ public class Game {
 
 
 
-            display.repaint();
+            getDisplay().repaint();
 
         }
         private void bouncePlayerCollisions(){
@@ -269,78 +227,98 @@ public class Game {
         }
 
     }
-    private class Display extends JPanel{
 
-        public Display(){
-            setFocusable(true);
-            //setBackground(Color.black);
-            setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_LENGTH));
-        }
+    @Override
+    protected void drawTanks(Graphics g){
+        Graphics2D g2 = (Graphics2D) g;
+        //for (Player player: players){
+        //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
+        g2.drawImage(TANK1_IMG, players[this_player].getX(), players[this_player].getY(), getDisplay());
+        g2.drawImage(TANK2_IMG, players[other_player].getX(), players[other_player].getY(), getDisplay());
 
-        private void drawTanks(Graphics g){
-            Graphics2D g2 = (Graphics2D) g;
-            //for (Player player: players){
-                //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
-                g2.drawImage(TANK1_IMG, players[this_player].getX(), players[this_player].getY(), this);
-                g2.drawImage(TANK2_IMG, players[other_player].getX(), players[other_player].getY(), this);
+        //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
+        //}
+    }
 
-                //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
-            //}
-        }
-        private void drawTerrain(Graphics g){
-            Graphics2D g2 = (Graphics2D) g;
-            int i =0;
-            for (Terrain block: terrain){
-                if(i<=1)
-                    g2.drawImage(HORIZ_IMG,block.getX(),block.getY(),this);
-                if(i<=3)
-                    g2.drawImage(SIDE_IMG,block.getX(),block.getY(),this);
-                if(i>3)
-                g2.drawImage(ROCK_IMG,block.getX(),block.getY(),this);
-
-                ++i;
-            }
-        }
-
-        public void drawBoard(Graphics g){
-            Graphics2D g2 = (Graphics2D) g;
-            var terrainImage = "src/uot/objects/images/ground2.png";
-            var ii = new ImageIcon(terrainImage);
-            Image image = ii.getImage();
-            g2.drawImage(image,0,0,this);
-        }
-
-        private void drawGameOver(Graphics g){
-            gameClock.stop();
-            String msg = winner + " wins";
-            Font font = new Font("MS Gothic",Font.BOLD, 35);
-            FontMetrics metrics =  getDisplay().getFontMetrics(font);
-
-            g.setColor(Color.pink);
-            g.setFont(font);
-            g.drawString(msg,(Game.BOARD_WIDTH-metrics.stringWidth(msg))/2,Game.BOARD_LENGTH/2);
-
-        }
-
-        private void drawBullets(Graphics g){
-            Graphics2D g2 = (Graphics2D) g;
-            for (Bullet bullet: bullets){
-                g2.drawImage(BULLET_IMG,bullet.getX(),bullet.getY(),this);
-            }
-        }
-        @Override
-        public void paintComponent(Graphics g){
-            super.paintComponent(g);
-            if (isOver)
-                drawGameOver(g);
-            else {
-                drawBoard(g);
-                drawTerrain(g);
-                drawTanks(g);
-                drawBullets(g);
-            }
+    @Override
+    protected void drawBullets(Graphics g){
+        Graphics2D g2 = (Graphics2D) g;
+        for (Bullet bullet: bullets){
+            g2.drawImage(BULLET_IMG,bullet.getX(),bullet.getY(),getDisplay());
         }
     }
+//    private class Display extends JPanel{
+//
+//        public Display(){
+//            setFocusable(true);
+//            //setBackground(Color.black);
+//            setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_LENGTH));
+//        }
+//
+//        private void drawTanks(Graphics g){
+//            Graphics2D g2 = (Graphics2D) g;
+//            //for (Player player: players){
+//                //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
+//                g2.drawImage(TANK1_IMG, players[this_player].getX(), players[this_player].getY(), this);
+//                g2.drawImage(TANK2_IMG, players[other_player].getX(), players[other_player].getY(), this);
+//
+//                //g2.drawImage(player.getImage(),player.getX(),player.getY(),this);
+//            //}
+//        }
+//        private void drawTerrain(Graphics g){
+//            Graphics2D g2 = (Graphics2D) g;
+//            int i =0;
+//            for (Terrain block: terrain){
+//                if(i<=1)
+//                    g2.drawImage(HORIZ_IMG,block.getX(),block.getY(),this);
+//                if(i<=3)
+//                    g2.drawImage(SIDE_IMG,block.getX(),block.getY(),this);
+//                if(i>3)
+//                g2.drawImage(ROCK_IMG,block.getX(),block.getY(),this);
+//
+//                ++i;
+//            }
+//        }
+//
+//        public void drawBoard(Graphics g){
+//            Graphics2D g2 = (Graphics2D) g;
+//            var terrainImage = "src/uot/objects/images/ground2.png";
+//            var ii = new ImageIcon(terrainImage);
+//            Image image = ii.getImage();
+//            g2.drawImage(image,0,0,this);
+//        }
+//
+//        private void drawGameOver(Graphics g){
+//            gameClock.stop();
+//            String msg = winner + " wins";
+//            Font font = new Font("MS Gothic",Font.BOLD, 35);
+//            FontMetrics metrics =  getDisplay().getFontMetrics(font);
+//
+//            g.setColor(Color.pink);
+//            g.setFont(font);
+//            g.drawString(msg,(Game.BOARD_WIDTH-metrics.stringWidth(msg))/2,Game.BOARD_LENGTH/2);
+//
+//        }
+//
+//        private void drawBullets(Graphics g){
+//            Graphics2D g2 = (Graphics2D) g;
+//            for (Bullet bullet: bullets){
+//                g2.drawImage(BULLET_IMG,bullet.getX(),bullet.getY(),this);
+//            }
+//        }
+//        @Override
+//        public void paintComponent(Graphics g){
+//            super.paintComponent(g);
+//            if (isOver)
+//                drawGameOver(g);
+//            else {
+//                drawBoard(g);
+//                drawTerrain(g);
+//                drawTanks(g);
+//                drawBullets(g);
+//            }
+//        }
+//    }
 
     private class KeyHandler extends KeyAdapter{
         @Override
