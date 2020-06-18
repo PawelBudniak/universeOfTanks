@@ -14,7 +14,7 @@ public abstract class RectangularObject implements Serializable {
     public int getY() { return rectangle.y; }
     public int getWidth() { return rectangle.width; }
     public int getHeight() { return rectangle.height; }
-    public void setX(int x){ rectangle.x = x; }
-    public void setY(int y){ rectangle.y = y; }
+    protected void setX(int x){ rectangle.x = x; }
+    protected void setY(int y){ rectangle.y = y; }
     public Rectangle getShape() { return rectangle; }
 }

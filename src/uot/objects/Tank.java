@@ -17,7 +17,7 @@ public class Tank extends RectangularObject implements Serializable {
     public static final Color DEFAULT_COLOR = Color.blue;
 
     private static final double BOUNCE_MODIFIER = 2.5;
-    private static final double SPEED = 0.5;
+    private static final double ACCELERATION = 0.5;
     private static final double SPEED_CAP = 6.0;
     private static final double FRICTION = 0.97;
 
@@ -117,15 +117,15 @@ public class Tank extends RectangularObject implements Serializable {
 
 
         if (a_pressed && !d_pressed)
-            ax = -SPEED;
+            ax = -ACCELERATION;
         else if (d_pressed)
-            ax = SPEED;
+            ax = ACCELERATION;
         else
             ax = 0;
         if (s_pressed && !w_pressed)
-            ay = SPEED;
+            ay = ACCELERATION;
         else if(w_pressed)
-            ay = -SPEED;
+            ay = -ACCELERATION;
         else
             ay = 0;
 
@@ -184,6 +184,45 @@ public class Tank extends RectangularObject implements Serializable {
         return healthLeft -= bullet.getDmg();
     }
 
+    public double getMaxHealth() {
+        return maxHealth;
+    }
+
+    public int getReloadTime() {
+        return reloadTime;
+    }
+
+    public int getAmmoCapacity() {
+        return ammoCapacity;
+    }
+
+
+    public int getAmmoLeft() {
+        return ammoLeft;
+    }
+
+    public double getHealthLeft() {
+        return healthLeft;
+    }
+
+    public void setA_pressed(boolean a_pressed) {
+        this.a_pressed = a_pressed;
+    }
+
+    public void setW_pressed(boolean w_pressed) {
+        this.w_pressed = w_pressed;
+    }
+
+    public void setD_pressed(boolean d_pressed) {
+        this.d_pressed = d_pressed;
+    }
+
+    public void setS_pressed(boolean s_pressed) {
+        this.s_pressed = s_pressed;
+    }
+
+
+
     public static class Builder{
         /** Required parameters */
         private final Rectangle rectangle;
@@ -234,43 +273,6 @@ public class Tank extends RectangularObject implements Serializable {
         healthLeft = builder.maxHealth;
         reloadTimer = new Timer(builder.reloadTime, (actionEvent) -> ammoLeft = ammoCapacity );
         reloadTimer.start();
-    }
-
-    public double getMaxHealth() {
-        return maxHealth;
-    }
-
-    public int getReloadTime() {
-        return reloadTime;
-    }
-
-    public int getAmmoCapacity() {
-        return ammoCapacity;
-    }
-
-
-    public int getAmmoLeft() {
-        return ammoLeft;
-    }
-
-    public double getHealthLeft() {
-        return healthLeft;
-    }
-
-    public void setA_pressed(boolean a_pressed) {
-        this.a_pressed = a_pressed;
-    }
-
-    public void setW_pressed(boolean w_pressed) {
-        this.w_pressed = w_pressed;
-    }
-
-    public void setD_pressed(boolean d_pressed) {
-        this.d_pressed = d_pressed;
-    }
-
-    public void setS_pressed(boolean s_pressed) {
-        this.s_pressed = s_pressed;
     }
 
     @Override

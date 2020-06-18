@@ -100,7 +100,6 @@ public class Game {
 
 
     public void sendBoard() {
-        System.out.println("wysylam board");
         BoardPacket packet = new BoardPacket(players, bullets, terrain);
         try{
             out.writeObject(packet);
@@ -112,20 +111,8 @@ public class Game {
         networkClock.start();
     }
 
-//    public void sendPacket(){
-//        //  System.out.println("wysylam pakiet, " + players[0].getTank());
-//        BoardPacket packet = new BoardPacket(players, bullets, null);
-//        try{
-//            out.writeObject(packet);
-//            out.flush();
-//            out.reset();
-//        }catch (IOException e){
-//            e.printStackTrace();
-//        }
-//    }
 
     public void sendPacket(){
-        //  System.out.println("wysylam pakiet, " + players[0].getTank());
         LinkedList<Coordinates> coords = new LinkedList<>();
         bullets.forEach(bullet -> coords.add(new Coordinates(bullet.getX(), bullet.getY())));
         ServerPacket packet = new ServerPacket(players[this_player].getX(), players[this_player].getY(),
@@ -250,7 +237,6 @@ public class Game {
             display.repaint();
 
         }
-        /** wersja z odbijaniem */
         private void bouncePlayerCollisions(){
             for (int i = 0; i < players.length;  ++i) {
                 Player player = players[i];
@@ -267,7 +253,7 @@ public class Game {
                 player.move();
             }
         }
-        /** wersja z blokowaniem ruchu kolizyjnego */
+        /** deprecated, could be used instead of bouncing */
         private void preventPlayerCollisions(){
             boolean p1_collision = terrain.stream().anyMatch(t -> players[0].willCollide(t));
             boolean p2_collision = terrain.stream().anyMatch(t -> players[1].willCollide(t));
