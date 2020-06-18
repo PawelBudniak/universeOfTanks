@@ -47,6 +47,7 @@ public class Game {
     private ObjectOutputStream out;
     private ObjectInputStream in;
     private boolean isOver;
+    private String winner;
 
     static{
         ImageIcon i = new ImageIcon(TANK1_PATH);
@@ -64,9 +65,10 @@ public class Game {
 
     }
 
-    public Game(String p1_nick, String p2_nick){
+    public Game(String p1_nick, String p2_nick, boolean online){
         this.terrain = new LinkedList<>();
         this.bullets = new LinkedList<>();
+        this.winner = null;
         players = new Player[2];
         players[0] = new Player(p1_nick,
                 new Tank.Builder(START_X, BOARD_LENGTH /2, TANK_WID, TANK_LEN).ammoCapacity(6).reloadTime(800).build());
@@ -79,19 +81,23 @@ public class Game {
         this.display = new Display();
         display.addKeyListener(new KeyHandler());
         display.addMouseListener(new MouseHandler());
-        gameClock.start();
+        if (!online)
+            gameClock.start();
     }
 
     public Game(String p1_nick, String p2_nick, ObjectOutputStream out, ObjectInputStream in){
-        this(p1_nick, p2_nick);
+        this(p1_nick, p2_nick, true);
         this.in = in;
         this.out = out;
         networkClock = new Timer(NET_TICK, (ActionEvent) -> {
             sendPacket();
             receivePacket();
         });
-        networkClock.start();
+        sendBoard();
+        gameClock.start();
+
     }
+
 
     public void sendBoard() {
         System.out.println("wysylam board");
@@ -103,6 +109,7 @@ public class Game {
         } catch (IOException e){
             e.printStackTrace();
         }
+        networkClock.start();
     }
 
 //    public void sendPacket(){
@@ -122,7 +129,7 @@ public class Game {
         LinkedList<Coordinates> coords = new LinkedList<>();
         bullets.forEach(bullet -> coords.add(new Coordinates(bullet.getX(), bullet.getY())));
         ServerPacket packet = new ServerPacket(players[this_player].getX(), players[this_player].getY(),
-                                        players[other_player].getX(), players[other_player].getY(), coords, isOver);
+                                        players[other_player].getX(), players[other_player].getY(), coords, isOver, winner);
 
         try{
             out.writeObject(packet);
@@ -204,6 +211,12 @@ public class Game {
 
                             double hp = player.hit(bullet);
                             if (hp <= 0) {
+                                // player is the one with hp <= 0
+                                if (players[this_player] == player)
+                                    winner = players[other_player].getName();
+                                else
+                                    winner = players[this_player].getName();
+
                                 System.out.println(player.getName() + " loses!");
                                 isOver = true;
                                 display.repaint();
@@ -231,6 +244,8 @@ public class Game {
             bouncePlayerCollisions();
 
             bullets.forEach(Bullet::move);
+
+
 
             display.repaint();
 
@@ -311,7 +326,7 @@ public class Game {
 
         private void drawGameOver(Graphics g){
             gameClock.stop();
-            String msg = "Game Over";
+            String msg = winner + " wins";
             Font font = new Font("MS Gothic",Font.BOLD, 35);
             FontMetrics metrics =  getDisplay().getFontMetrics(font);
 

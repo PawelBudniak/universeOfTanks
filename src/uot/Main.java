@@ -13,9 +13,9 @@ public class Main {
 
     public static void main(String[] args) {
 
-        JFrame frame = new OptionFrame();
+        //JFrame frame = new OptionFrame();
 
-  /*
+
         System.out.println("Press 1 for testing in single player mode, press 2 for multiplayer");
         Scanner s = new Scanner(System.in);
         int choice = s.nextInt();
@@ -29,7 +29,7 @@ public class Main {
     private static void singlePlayer(){
         EventQueue.invokeLater(()->
         {
-            Game game = new Game("mati", "seba");
+            Game game = new Game("mati", "seba", false);
             JFrame frame = new GameFrame(game.getDisplay());
             frame.setVisible(true);
         });
@@ -54,7 +54,7 @@ public class Main {
             System.out.println(clientSocket.getSendBufferSize());
             //out.writeObject(new ServerPacket(null, null, null));
             Game game = new Game("Seba","laptok", out, in);
-            game.sendBoard();
+            //game.sendBoard();
             JFrame frame = new GameFrame(game.getDisplay());
             frame.setVisible(true);
 
@@ -66,7 +66,7 @@ public class Main {
             System.out.println("Exception caught when trying to listen on port "
                     + port + " or listening for a connection");
             System.out.println(e.getMessage());
-        }*/
+        }
     }
 
 }

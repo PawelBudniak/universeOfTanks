@@ -56,6 +56,7 @@ public class Client {
     private int clientTankY;
     private int clientTankX;
     private boolean gameOver;
+    private String winner;
 
     private boolean a_pressed;
     private boolean w_pressed;
@@ -77,6 +78,7 @@ public class Client {
     private Display display;
     private final int this_player = 1;
     private final int other_player = 0;
+
 
 
     static{
@@ -115,6 +117,7 @@ public class Client {
     public boolean isGameOver() {
         return gameOver;
     }
+
 
     public void receiveBoard(){
         while(terrain == null) {
@@ -164,6 +167,7 @@ public class Client {
             clientTankY = received.getClientTankY();
             gameOver = received.isGameOver();
             if (gameOver) {
+                winner = received.getWinner();
                 display.repaint();
                 gameOver();
             }
@@ -221,7 +225,7 @@ public class Client {
         private void drawGameOver(Graphics g){
             clock.stop();
             Graphics2D g2 = (Graphics2D) g;
-            String msg = "Game Over";
+            String msg = winner + " wins";
             Font font = new Font("MS Gothic",Font.BOLD, 35);
             FontMetrics metrics =  getDisplay().getFontMetrics(font);
 
