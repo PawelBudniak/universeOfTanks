@@ -29,6 +29,7 @@ public abstract class AbstractEngine {
     protected Timer gameClock;
     protected Display display;
     protected boolean isOver;
+    protected boolean connectionLost;
     String winner;
 
 
@@ -60,6 +61,20 @@ public abstract class AbstractEngine {
         return display;
     }
 
+    private void drawMsg(Graphics g, String msg){
+        Font font = new Font("MS Gothic",Font.BOLD, 35);
+        FontMetrics metrics =  getDisplay().getFontMetrics(font);
+
+        g.setColor(Color.pink);
+        g.setFont(font);
+        g.drawString(msg,(Game.BOARD_WIDTH-metrics.stringWidth(msg))/2,Game.BOARD_LENGTH/2);
+    }
+
+    protected void drawConnectionLost(Graphics g){
+        gameClock.stop();
+        drawMsg(g, "Connection Lost");
+    }
+
     protected void drawTerrain(Graphics g){
         Graphics2D g2 = (Graphics2D) g;
         int i =0;
@@ -82,13 +97,7 @@ public abstract class AbstractEngine {
 
     protected void drawGameOver(Graphics g){
         gameClock.stop();
-        String msg = winner + " wins";
-        Font font = new Font("MS Gothic",Font.BOLD, 35);
-        FontMetrics metrics =  getDisplay().getFontMetrics(font);
-
-        g.setColor(Color.pink);
-        g.setFont(font);
-        g.drawString(msg,(Game.BOARD_WIDTH-metrics.stringWidth(msg))/2,Game.BOARD_LENGTH/2);
+        drawMsg(g, winner + " wins");
 
     }
 
@@ -106,6 +115,8 @@ public abstract class AbstractEngine {
             super.paintComponent(g);
             if (isOver)
                 drawGameOver(g);
+            else if (connectionLost)
+                drawConnectionLost(g);
             else {
                 drawBoard(g);
                 drawTerrain(g);

@@ -4,6 +4,7 @@ import uot.objects.Terrain;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.SocketException;
 import java.util.List;
 import java.awt.event.*;
 import java.io.*;
@@ -25,7 +26,6 @@ public class Client extends AbstractEngine{
         ) {
             clientSocket.setTcpNoDelay(true);
             Client client = new Client(out, in);
-            //client.receiveBoard();
             JFrame frame = new GameFrame(client.getDisplay());
             frame.setVisible(true);
             while (!client.isGameOver()){
@@ -89,17 +89,20 @@ public class Client extends AbstractEngine{
         return isOver;
     }
 
+    void connectionLost(){
+        connectionLost = true;
+        networkClock.stop();
+    }
+
 
     public void receiveBoard(){
-        while(terrain == null) {
-            try {
-                BoardPacket received = (BoardPacket) in.readObject();
-                if (received.getTerrain() != null) {
-                    terrain = received.getTerrain();
-                }
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+        try {
+            BoardPacket received = (BoardPacket) in.readObject();
+            if (received.getTerrain() != null) {
+                terrain = received.getTerrain();
             }
+        } catch (IOException | ClassNotFoundException e){
+            connectionLost();
         }
         gameClock.start();
         networkClock.start();
@@ -111,12 +114,11 @@ public class Client extends AbstractEngine{
         try{
             ClientPacket packet = new ClientPacket(a_pressed, w_pressed, d_pressed, s_pressed, mouseX, mouseY, isMouseInputValid);
             isMouseInputValid = false;
-            // System.out.println(packet);
             out.writeObject(packet);
             out.flush();
             //out.reset();
-        }catch (IOException e){
-            e.printStackTrace();
+        }catch (IOException e) {
+            connectionLost();
         }
     }
 
@@ -141,7 +143,7 @@ public class Client extends AbstractEngine{
             }
 
         }catch (IOException | ClassNotFoundException e){
-            e.printStackTrace();
+            connectionLost();
         }
 
     }

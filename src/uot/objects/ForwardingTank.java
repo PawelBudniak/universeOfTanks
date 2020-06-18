@@ -115,4 +115,9 @@ public class ForwardingTank implements Serializable {
     public Rectangle getShape() {
         return tank.getShape();
     }
+
+    @Override
+    public String toString() {
+        return tank.toString();
+    }
 }

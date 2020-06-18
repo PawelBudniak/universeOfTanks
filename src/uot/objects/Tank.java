@@ -32,6 +32,7 @@ public class Tank extends RectangularObject implements Serializable {
     //private final Image image;
 
     /** current state (current coordinates are kept in the inherited protected rectangle field) */
+
     private int ammoLeft;
     private double healthLeft;
     // will be initialized to 0 by default
@@ -39,8 +40,8 @@ public class Tank extends RectangularObject implements Serializable {
     private double ay;          // y direction acceleration
     private double actual_dx;   // approximate change in the y direction each tick
     private double actual_dy;   // approximate change in the x direction each tick
-    private double prev_x;
-    private double prev_y;
+    private double prev_x;      // x coordinate in the previous tick
+    private double prev_y;      // y coordinate in the previous tick
     private boolean a_pressed;
     private boolean w_pressed;
     private boolean d_pressed;
@@ -232,7 +233,6 @@ public class Tank extends RectangularObject implements Serializable {
         private double maxHealth = DEFAULT_HEALTH;
         private int reloadTime = DEFAULT_RELOAD_TIME;
         private int ammoCapacity = DEFAULT_AMMO_CAPACITY;
-        private Color color = DEFAULT_COLOR;
 
         public Builder(Rectangle r){
             this.rectangle = new Rectangle(r);
@@ -252,9 +252,6 @@ public class Tank extends RectangularObject implements Serializable {
         public Builder ammoCapacity(int val){
             ammoCapacity = val; return this;
         }
-        public Builder color(Color val){
-            color = val;        return this;
-        }
         public Tank build(){
             return new Tank(this);
         }
@@ -265,12 +262,9 @@ public class Tank extends RectangularObject implements Serializable {
         maxHealth = builder.maxHealth;
         ammoCapacity = builder.ammoCapacity;
         reloadTime = builder.reloadTime;
-
-        //image = builder.image;
-
-
         ammoLeft = builder.ammoCapacity;
         healthLeft = builder.maxHealth;
+
         reloadTimer = new Timer(builder.reloadTime, (actionEvent) -> ammoLeft = ammoCapacity );
         reloadTimer.start();
     }

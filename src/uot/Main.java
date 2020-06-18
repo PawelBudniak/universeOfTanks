@@ -27,13 +27,9 @@ public class Main {
     }
 
     private static void singlePlayer(){
-        EventQueue.invokeLater(()->
-        {
-            Game game = new Game("mati", "seba", false);
-            JFrame frame = new GameFrame(game.getDisplay());
-            frame.setVisible(true);
-        });
-
+        Game game = new Game("mati", "seba", false);
+        JFrame frame = new GameFrame(game.getDisplay());
+        frame.setVisible(true);
     }
     private static void multiPlayer(){
         final int port = 4445;
@@ -41,23 +37,15 @@ public class Main {
         try (
                 ServerSocket serverSocket = new ServerSocket(port);
                 Socket clientSocket = serverSocket.accept();
-//                ObjectOutputStream out =
-//                        new ObjectOutputStream(new BufferedOutputStream(clientSocket.getOutputStream(), 65356));
-//                ObjectInputStream in =
-//                        new ObjectInputStream(new BufferedInputStream(clientSocket.getInputStream(), 65356))
                 ObjectOutputStream out =
                         new ObjectOutputStream(clientSocket.getOutputStream());
                 ObjectInputStream in =
                         new ObjectInputStream(clientSocket.getInputStream())
         ) {
             clientSocket.setTcpNoDelay(true);
-            System.out.println(clientSocket.getSendBufferSize());
-            //out.writeObject(new ServerPacket(null, null, null));
             Game game = new Game("Seba","laptok", out, in);
-            //game.sendBoard();
             JFrame frame = new GameFrame(game.getDisplay());
             frame.setVisible(true);
-
 
             while (!game.isOver()){
                 ;
