@@ -35,14 +35,15 @@ public class Game extends AbstractEngine{
         this.winner = null;
         players = new Player[2];
         players[0] = new Player(p1_nick,
-                new Tank.Builder(START_X, BOARD_LENGTH /2, TANK_WID, TANK_LEN).ammoCapacity(6).reloadTime(800).build());
+                new Tank.Builder(START_X, BOARD_LENGTH /2, TANK_WID, TANK_LEN).ammoCapacity(6).reloadTime(800).maxHealth(TANK_HEALTH).build());
         players[1] = new Player(p2_nick,
-                new Tank.Builder(BOARD_LENGTH - START_X, BOARD_LENGTH /2, TANK_WID, TANK_LEN).ammoCapacity(6).reloadTime(800).build());
+                new Tank.Builder(BOARD_LENGTH - START_X, BOARD_LENGTH /2, TANK_WID, TANK_LEN).ammoCapacity(6).reloadTime(800).maxHealth(TANK_HEALTH).build());
         generateWalls();
         generateTerrain();
         gameClock = new Timer(TICK, new GameClock());
         display.addKeyListener(new KeyHandler());
         display.addMouseListener(new MouseHandler());
+        setMaxHealth((int)players[0].getMaxHealth(), (int)players[1].getMaxHealth());
         if (!online)
             gameClock.start();
     }
@@ -80,10 +81,15 @@ public class Game extends AbstractEngine{
 
 
     public void sendPacket(){
+        Player p1 = players[this_player];
+        Player p2 = players[other_player];
         LinkedList<Coordinates> coords = new LinkedList<>();
         bullets.forEach(bullet -> coords.add(new Coordinates(bullet.getX(), bullet.getY())));
-        ServerPacket packet = new ServerPacket(players[this_player].getX(), players[this_player].getY(),
-                                        players[other_player].getX(), players[other_player].getY(), coords, isOver, winner);
+        ServerPacket packet = new ServerPacket(
+                p1.getX(), p1.getY(),
+                p2.getX(), p2.getY(),
+                coords, isOver, winner,
+                p1.getHealthLeft(), p2.getHealthLeft());
 
         try{
             out.writeObject(packet);
@@ -193,8 +199,9 @@ public class Game extends AbstractEngine{
 
             bullets.forEach(Bullet::move);
 
-
-
+            Player p1 = players[0];
+            Player p2 = players[1];
+            drawHealthBars(p1.getX(),p1.getY(), (int)p1.getHealthLeft(), p2.getX(),p2.getY(), (int)p2.getHealthLeft());
             getDisplay().repaint();
 
         }

@@ -1,5 +1,6 @@
 package uot;
 
+import javafx.scene.control.ProgressBar;
 import uot.objects.Terrain;
 
 import javax.swing.*;
@@ -16,6 +17,10 @@ public abstract class AbstractEngine {
     static final String BACKGROUND_PATH = "src/uot/objects/images/ground2.png";
     static final int BOARD_WIDTH = 500;
     static final int BOARD_LENGTH = 500;
+    private static final int HEALTH_BAR_HEIGHT = 8;
+    private static final int HEALTH_BAR_WIDTH = 30;
+    private static final int HEALTH_BAR_LENGTH = 5;
+
 
     protected static final Image BULLET_IMG;
     protected static final Image TANK1_IMG;
@@ -25,16 +30,34 @@ public abstract class AbstractEngine {
     protected static final Image SIDE_IMG;
     protected static final Image BACKGROUND_IMG;
 
+    protected static final double TANK_HEALTH = 300;
+
     protected List<Terrain> terrain;
     protected Timer gameClock;
     protected Display display;
     protected boolean isOver;
     protected boolean connectionLost;
     String winner;
+    JProgressBar p1HealthBar;
+    JProgressBar p2HealthBar;
 
 
     public AbstractEngine() {
+        p1HealthBar = new JProgressBar(0,0);
+        p2HealthBar = new JProgressBar(0,0);
+        p1HealthBar.setForeground(Color.GREEN);
+        p1HealthBar.setBackground(Color.RED);
+        p1HealthBar.setBounds(0,0,HEALTH_BAR_WIDTH,HEALTH_BAR_LENGTH);
+        p2HealthBar.setBounds(0,0,HEALTH_BAR_WIDTH,HEALTH_BAR_LENGTH);
+        p2HealthBar.setForeground(Color.GREEN);
+        p2HealthBar.setBackground(Color.RED);
+        // health bars are hidden until the setMaxHealth method is called
+        p1HealthBar.setVisible(false);
+        p2HealthBar.setVisible(false);
+
         display = new Display();
+        display.add(p1HealthBar);
+        display.add(p2HealthBar);
     }
 
     static{
@@ -55,6 +78,11 @@ public abstract class AbstractEngine {
 
     }
 
+    private void cleanBoard(){
+        p1HealthBar.setVisible(false);
+        p2HealthBar.setVisible(false);
+    }
+
     protected abstract void drawTanks(Graphics g);
 
     public Display getDisplay() {
@@ -72,6 +100,7 @@ public abstract class AbstractEngine {
 
     protected void drawConnectionLost(Graphics g){
         gameClock.stop();
+        cleanBoard();
         drawMsg(g, "Connection Lost");
     }
 
@@ -97,19 +126,36 @@ public abstract class AbstractEngine {
 
     protected void drawGameOver(Graphics g){
         gameClock.stop();
+        cleanBoard();
         drawMsg(g, winner + " wins");
 
+    }
+
+    /** If a subclass wants health bars to be visible it needs to call this method and set the maximum healths*/
+    protected void setMaxHealth(int p1Health, int p2Health){
+        p1HealthBar.setVisible(true);
+        p2HealthBar.setVisible(true);
+        p1HealthBar.setMaximum(p1Health);
+        p2HealthBar.setMaximum(p2Health);
+    }
+
+    protected void drawHealthBars(int x1, int y1, int health1, int x2, int y2, int health2){
+        p1HealthBar.setValue(health1);
+        p2HealthBar.setValue(health2);
+        int x_bar1 = x1 + TANK1_IMG.getWidth(display)/2 - HEALTH_BAR_WIDTH/2;
+        int x_bar2 = x2 + TANK2_IMG.getWidth(display)/2 - HEALTH_BAR_WIDTH/2;
+        p1HealthBar.setLocation(x_bar1, y1 - HEALTH_BAR_HEIGHT);
+        p2HealthBar.setLocation(x_bar2, y2 - HEALTH_BAR_HEIGHT);
     }
 
     protected abstract void drawBullets(Graphics g);
 
     protected class Display extends JPanel {
-
         public Display() {
+            setLayout(null);
             setFocusable(true);
             setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_LENGTH));
         }
-
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);

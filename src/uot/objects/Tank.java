@@ -16,10 +16,10 @@ public class Tank extends RectangularObject implements Serializable {
     public static final int DEFAULT_AMMO_CAPACITY = 5;
     public static final Color DEFAULT_COLOR = Color.blue;
 
-    private static final double BOUNCE_MODIFIER = 2.5;
-    private static final double ACCELERATION = 0.5;
-    private static final double SPEED_CAP = 6.0;
-    private static final double FRICTION = 0.97;
+    private static final double DEFAULT_BOUNCE_MODIFIER = 2.5;
+    private static final double DEFAULT_ACCELERATION = 0.5;
+    private static final double DEFAULT_SPEED_CAP = 6.0;
+    private static final double DEFAULT_FRICTION = 0.97;
 
     private Timer reloadTimer;
 
@@ -28,6 +28,10 @@ public class Tank extends RectangularObject implements Serializable {
     private final double maxHealth;
     private final int reloadTime;
     private final int ammoCapacity;
+    private double bounceModifier;
+    private double acceleration;
+    private double speedCap;
+    private double friction;
 
     //private final Image image;
 
@@ -66,24 +70,24 @@ public class Tank extends RectangularObject implements Serializable {
 
         // object on the right
         if (from.getX() <= getX() + getWidth() && prev_x + getWidth()<= from.getX()) {
-            actual_dx = -BOUNCE_MODIFIER * actual_dx;
+            actual_dx = -bounceModifier * actual_dx;
         }
         // object on the left
         else if (from.getX() + from.getWidth() >= getX() && prev_x >= from.getWidth() + from.getX()){
-            actual_dx = -BOUNCE_MODIFIER * actual_dx;
+            actual_dx = -bounceModifier * actual_dx;
         }
         // object below the tank
         else if (from.getY() <= getY() + getHeight() && prev_y + getHeight() <= from.getY()) {
-            actual_dy = -BOUNCE_MODIFIER * actual_dy;
+            actual_dy = -bounceModifier * actual_dy;
         }
         // object above the tank
         else if (from.getY() + from.getHeight() >= getY() && prev_y >= from.getY() + from.getHeight() ) {
-            actual_dy = -BOUNCE_MODIFIER * actual_dy;
+            actual_dy = -bounceModifier * actual_dy;
         }
         // last ditch effort
         else{
-            actual_dx = -BOUNCE_MODIFIER * actual_dx;
-            actual_dy = -BOUNCE_MODIFIER * actual_dy;
+            actual_dx = -bounceModifier * actual_dx;
+            actual_dy = -bounceModifier * actual_dy;
         }
 
     }
@@ -96,10 +100,10 @@ public class Tank extends RectangularObject implements Serializable {
         double next_dx = actual_dx;
         next_dx += ax;
         if (next_dx > 0)
-            next_dx = Math.min(next_dx, SPEED_CAP);
+            next_dx = Math.min(next_dx, speedCap);
         else
-            next_dx = Math.max(next_dx, -SPEED_CAP);
-        next_dx = FRICTION * next_dx;
+            next_dx = Math.max(next_dx, -speedCap);
+        next_dx = friction * next_dx;
         return next_dx;
 
     }
@@ -107,10 +111,10 @@ public class Tank extends RectangularObject implements Serializable {
         double next_dy = actual_dy;
         next_dy += ay;
         if (next_dy > 0)
-            next_dy = Math.min(next_dy, SPEED_CAP);
+            next_dy = Math.min(next_dy, speedCap);
         else
-            next_dy = Math.max(next_dy, -SPEED_CAP);
-        next_dy = FRICTION * next_dy;
+            next_dy = Math.max(next_dy, -speedCap);
+        next_dy = friction * next_dy;
         return next_dy;
     }
 
@@ -118,15 +122,15 @@ public class Tank extends RectangularObject implements Serializable {
 
 
         if (a_pressed && !d_pressed)
-            ax = -ACCELERATION;
+            ax = -acceleration;
         else if (d_pressed)
-            ax = ACCELERATION;
+            ax = acceleration;
         else
             ax = 0;
         if (s_pressed && !w_pressed)
-            ay = ACCELERATION;
+            ay = acceleration;
         else if(w_pressed)
-            ay = -ACCELERATION;
+            ay = -acceleration;
         else
             ay = 0;
 
@@ -233,6 +237,10 @@ public class Tank extends RectangularObject implements Serializable {
         private double maxHealth = DEFAULT_HEALTH;
         private int reloadTime = DEFAULT_RELOAD_TIME;
         private int ammoCapacity = DEFAULT_AMMO_CAPACITY;
+        private double bounceModifier = DEFAULT_BOUNCE_MODIFIER;
+        private double acceleration = DEFAULT_ACCELERATION;
+        private double speedCap = DEFAULT_SPEED_CAP;
+        private double friction = DEFAULT_FRICTION;
 
         public Builder(Rectangle r){
             this.rectangle = new Rectangle(r);
@@ -242,6 +250,22 @@ public class Tank extends RectangularObject implements Serializable {
             this.rectangle = new Rectangle(x, y, width, height);
         }
 
+
+        public Builder bounceModifier(double bounceModifier) {
+            this.bounceModifier = bounceModifier; return this;
+        }
+
+        public Builder acceleration(double acceleration) {
+            this.acceleration = acceleration; return this;
+        }
+
+        public Builder speedCap(double speedCap) {
+            this.speedCap = speedCap; return this;
+        }
+
+        public Builder friction(double friction) {
+            this.friction = friction; return this;
+        }
 
         public Builder maxHealth(double val){
             maxHealth = val;    return this;
@@ -257,13 +281,19 @@ public class Tank extends RectangularObject implements Serializable {
         }
 
     }
-    private Tank(Builder builder){
+    // protected for testing
+    protected Tank(Builder builder){
         rectangle = builder.rectangle;
         maxHealth = builder.maxHealth;
         ammoCapacity = builder.ammoCapacity;
         reloadTime = builder.reloadTime;
         ammoLeft = builder.ammoCapacity;
         healthLeft = builder.maxHealth;
+        bounceModifier = builder.bounceModifier;
+        acceleration = builder.acceleration;
+        friction = builder.friction;
+        speedCap = builder.speedCap;
+
 
         reloadTimer = new Timer(builder.reloadTime, (actionEvent) -> ammoLeft = ammoCapacity );
         reloadTimer.start();

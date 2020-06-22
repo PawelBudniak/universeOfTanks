@@ -13,8 +13,10 @@ public class ServerPacket implements Serializable {
     private List<Coordinates> bullets;
     private boolean gameOver;
     private String winner;
+    private double serverHealth;
+    private double clientHealth;
 
-    public ServerPacket(int serverTankX, int serverTankY, int clientTankX, int clientTankY, List<Coordinates> bullets, boolean gameOver, String winner) {
+    public ServerPacket(int serverTankX, int serverTankY, int clientTankX, int clientTankY, List<Coordinates> bullets, boolean gameOver, String winner, double serverHealth, double clientHealth) {
         this.serverTankX = serverTankX;
         this.serverTankY = serverTankY;
         this.clientTankX = clientTankX;
@@ -22,8 +24,18 @@ public class ServerPacket implements Serializable {
         this.bullets = bullets;
         this.gameOver = gameOver;
         this.winner = winner;
+        this.serverHealth = serverHealth;
+        this.clientHealth = clientHealth;
     }
 
+
+    public double getServerHealth() {
+        return serverHealth;
+    }
+
+    public double getClientHealth() {
+        return clientHealth;
+    }
 
     public int getServerTankX() {
         return serverTankX;
@@ -61,6 +73,8 @@ public class ServerPacket implements Serializable {
                 ", bullets=" + bullets +
                 ", gameOver=" + gameOver +
                 ", winner='" + winner + '\'' +
+                ", serverHealth=" + serverHealth +
+                ", clientHealth=" + clientHealth +
                 '}';
     }
 }

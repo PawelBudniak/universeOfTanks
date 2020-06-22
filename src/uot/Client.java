@@ -51,6 +51,8 @@ public class Client extends AbstractEngine{
     private int serverTankY;
     private int clientTankY;
     private int clientTankX;
+    private double clientHealth;
+    private double serverHealth;
 
     private boolean a_pressed;
     private boolean w_pressed;
@@ -75,6 +77,7 @@ public class Client extends AbstractEngine{
         terrain = null;
         display.addKeyListener(new KeyHandler());
         display.addMouseListener(new MouseHandler());
+        setMaxHealth((int)TANK_HEALTH, (int)TANK_HEALTH);
         gameClock = new Timer(Game.TICK, new Clock());
         networkClock = new Timer (Game.NET_TICK, (ActionEvent) -> {
             sendPacket();
@@ -137,6 +140,8 @@ public class Client extends AbstractEngine{
             clientTankY = received.getClientTankY();
             winner = received.getWinner();
             isOver = received.isGameOver();
+            clientHealth = received.getClientHealth();
+            serverHealth = received.getServerHealth();
             if (isOver) {
                 display.repaint();
                 gameOver();
@@ -150,6 +155,7 @@ public class Client extends AbstractEngine{
     private class Clock implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
+            drawHealthBars(serverTankX,serverTankY,(int)serverHealth,clientTankX,clientTankY,(int)clientHealth);
             display.repaint();
         }
     }
