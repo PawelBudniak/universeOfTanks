@@ -20,6 +20,8 @@ public abstract class AbstractEngine {
     private static final int HEALTH_BAR_HEIGHT = 8;
     private static final int HEALTH_BAR_WIDTH = 30;
     private static final int HEALTH_BAR_LENGTH = 5;
+    private static final int TANK1_WID;
+    private static final int TANK2_WID;
 
 
     protected static final Image BULLET_IMG;
@@ -63,8 +65,10 @@ public abstract class AbstractEngine {
     static{
         ImageIcon i = new ImageIcon(TANK1_PATH);
         TANK1_IMG = i.getImage();
+        TANK1_WID = i.getIconWidth();
         i = new ImageIcon(TANK2_PATH);
         TANK2_IMG = i.getImage();
+        TANK2_WID = i.getIconWidth();
         i = new ImageIcon(BL_PATH);
         BULLET_IMG = i.getImage();
         i = new ImageIcon(ROCK_PATH);
@@ -142,8 +146,8 @@ public abstract class AbstractEngine {
     protected void drawHealthBars(int x1, int y1, int health1, int x2, int y2, int health2){
         p1HealthBar.setValue(health1);
         p2HealthBar.setValue(health2);
-        int x_bar1 = x1 + TANK1_IMG.getWidth(display)/2 - HEALTH_BAR_WIDTH/2;
-        int x_bar2 = x2 + TANK2_IMG.getWidth(display)/2 - HEALTH_BAR_WIDTH/2;
+        int x_bar1 = x1 + TANK1_WID/2 - HEALTH_BAR_WIDTH/2;
+        int x_bar2 = x2 + TANK2_WID/2 - HEALTH_BAR_WIDTH/2;
         p1HealthBar.setLocation(x_bar1, y1 - HEALTH_BAR_HEIGHT);
         p2HealthBar.setLocation(x_bar2, y2 - HEALTH_BAR_HEIGHT);
     }

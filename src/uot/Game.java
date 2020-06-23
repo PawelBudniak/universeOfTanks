@@ -132,6 +132,7 @@ public class Game extends AbstractEngine{
             }while(players[0].collision(new_block) || players[1].collision(new_block));
             terrain.add(new_block);
         }
+        terrain.add(new Terrain(30, 47));
 
     }
     /** generate the walls at the edges of the board */
@@ -150,7 +151,6 @@ public class Game extends AbstractEngine{
     }
 
     private class GameClock implements ActionListener{
-        private int counter;
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {

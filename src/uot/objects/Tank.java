@@ -51,6 +51,8 @@ public class Tank extends RectangularObject implements Serializable {
     private boolean d_pressed;
     private boolean s_pressed;
     private boolean bouncedLastTick;
+    private int bounceLockCounter;
+    private int BOUNCE_LOCK_LIMIT = 100;
 
 
     /** if facingRight is true the bullet will appear on the right side of the tank, if it's false, it will appear on the left side
@@ -156,10 +158,15 @@ public class Tank extends RectangularObject implements Serializable {
 
 
         // if there was a bounce - prevent velocity change for one tick, so the tank can safely bounce without getting stuck
-        if (!bouncedLastTick) {
+        if (!bouncedLastTick && bounceLockCounter < BOUNCE_LOCK_LIMIT) {
             xVelocity = getNextDx();
             yVelocity = getNextDy();
+            if (bounceLockCounter >= 10)
+                System.out.println(bounceLockCounter);
+            bounceLockCounter = 0;
         }
+        else
+            ++bounceLockCounter;
 
         prev_x = getX();
         prev_y = getY();
