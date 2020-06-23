@@ -16,7 +16,7 @@ public class Tank extends RectangularObject implements Serializable {
     public static final int DEFAULT_AMMO_CAPACITY = 5;
     public static final Color DEFAULT_COLOR = Color.blue;
 
-    private static final double DEFAULT_BOUNCE_MODIFIER = 2.5;
+    private static final double DEFAULT_BOUNCE_MODIFIER = 1.1;
     private static final double DEFAULT_ACCELERATION = 0.5;
     private static final double DEFAULT_SPEED_CAP = 6.0;
     private static final double DEFAULT_FRICTION = 0.97;
@@ -42,14 +42,16 @@ public class Tank extends RectangularObject implements Serializable {
     // will be initialized to 0 by default
     private double ax;          // x direction acceleration
     private double ay;          // y direction acceleration
-    private double actual_dx;   // approximate change in the y direction each tick
-    private double actual_dy;   // approximate change in the x direction each tick
+    private double xVelocity;   // approximate change in the y direction each tick
+    private double yVelocity;   // approximate change in the x direction each tick
     private double prev_x;      // x coordinate in the previous tick
     private double prev_y;      // y coordinate in the previous tick
     private boolean a_pressed;
     private boolean w_pressed;
     private boolean d_pressed;
     private boolean s_pressed;
+    private boolean bouncedLastTick;
+
 
     /** if facingRight is true the bullet will appear on the right side of the tank, if it's false, it will appear on the left side
      *  the bullet always appears in the middle height-wise */
@@ -82,25 +84,29 @@ public class Tank extends RectangularObject implements Serializable {
 
         // object on the right
         if (from.getX() <= getX() + getWidth() && prev_x + getWidth()<= from.getX()) {
-            actual_dx = -bounceModifier * actual_dx;
+            xVelocity = -bounceModifier * xVelocity;
         }
         // object on the left
         else if (from.getX() + from.getWidth() >= getX() && prev_x >= from.getWidth() + from.getX()){
-            actual_dx = -bounceModifier * actual_dx;
+            xVelocity = -bounceModifier * xVelocity;
         }
         // object below the tank
         else if (from.getY() <= getY() + getHeight() && prev_y + getHeight() <= from.getY()) {
-            actual_dy = -bounceModifier * actual_dy;
+            yVelocity = -bounceModifier * yVelocity;
         }
         // object above the tank
         else if (from.getY() + from.getHeight() >= getY() && prev_y >= from.getY() + from.getHeight() ) {
-            actual_dy = -bounceModifier * actual_dy;
+            yVelocity = -bounceModifier * yVelocity;
         }
         // last ditch effort
         else{
-            actual_dx = -bounceModifier * actual_dx;
-            actual_dy = -bounceModifier * actual_dy;
+            xVelocity = -bounceModifier * xVelocity;
+            yVelocity = -bounceModifier * yVelocity;
         }
+        yVelocity = getCappedVelocity(yVelocity);
+        xVelocity = getCappedVelocity(xVelocity);
+
+        bouncedLastTick = true;
 
     }
     // to albo bounce
@@ -108,30 +114,32 @@ public class Tank extends RectangularObject implements Serializable {
         return new Tank.Builder(getX()+(int)getNextDx(), getY() + (int)getNextDy(), getWidth(), getHeight()).build().collision(other);
     }
 
-    private double getNextDx(){
-        double next_dx = actual_dx;
-        next_dx += ax;
-        if (next_dx > 0)
-            next_dx = Math.min(next_dx, speedCap);
+    private double getCappedVelocity(double v){
+        if (v > 0)
+            return Math.min(v,speedCap);
         else
-            next_dx = Math.max(next_dx, -speedCap);
-        next_dx = friction * next_dx;
-        return next_dx;
+            return Math.max(v, -speedCap);
+    }
+
+    private double getNextDx(){
+        double nextVx = xVelocity;
+        nextVx += ax;
+        nextVx = getCappedVelocity(nextVx);
+
+        nextVx = friction * nextVx;
+        return nextVx;
 
     }
     private double getNextDy(){
-        double next_dy = actual_dy;
-        next_dy += ay;
-        if (next_dy > 0)
-            next_dy = Math.min(next_dy, speedCap);
-        else
-            next_dy = Math.max(next_dy, -speedCap);
-        next_dy = friction * next_dy;
-        return next_dy;
+        double nextVy = yVelocity;
+        nextVy += ay;
+        nextVy = getCappedVelocity(nextVy);
+        nextVy = friction * nextVy;
+        return nextVy;
     }
 
-    public void move(){
 
+    public void move(){
 
         if (a_pressed && !d_pressed)
             ax = -acceleration;
@@ -141,22 +149,28 @@ public class Tank extends RectangularObject implements Serializable {
             ax = 0;
         if (s_pressed && !w_pressed)
             ay = acceleration;
-        else if(w_pressed)
+        else if (w_pressed)
             ay = -acceleration;
         else
             ay = 0;
 
-        actual_dx = getNextDx();
-        actual_dy = getNextDy();
+
+        // if there was a bounce - prevent velocity change for one tick, so the tank can safely bounce without getting stuck
+        if (!bouncedLastTick) {
+            xVelocity = getNextDx();
+            yVelocity = getNextDy();
+        }
 
         prev_x = getX();
         prev_y = getY();
 
-        int dx = (int)actual_dx;
-        int dy = (int)actual_dy;
+        int dx = (int)Math.round(xVelocity);
+        int dy = (int)Math.round(yVelocity);
 
         setX(getX() + dx);
         setY(getY() + dy);
+
+        bouncedLastTick = false;
     }
     public void keyPressed(int keyCode ){
         switch(keyCode){
@@ -238,7 +252,13 @@ public class Tank extends RectangularObject implements Serializable {
         this.s_pressed = s_pressed;
     }
 
+    public double getXVelocity() {
+        return xVelocity;
+    }
 
+    public double getYVelocity() {
+        return yVelocity;
+    }
 
     public static class Builder{
         /** Required parameters */
@@ -264,6 +284,8 @@ public class Tank extends RectangularObject implements Serializable {
 
 
         public Builder bounceModifier(double bounceModifier) {
+            if (bounceModifier < 1)
+                throw new IllegalArgumentException("bounceModifier has to be bigger or equal 1");
             this.bounceModifier = bounceModifier; return this;
         }
 
@@ -276,6 +298,8 @@ public class Tank extends RectangularObject implements Serializable {
         }
 
         public Builder friction(double friction) {
+            if (friction > 1 || friction < 0)
+                throw new IllegalArgumentException("Friction has to be a value between 0 and 1");
             this.friction = friction; return this;
         }
 
@@ -324,8 +348,8 @@ public class Tank extends RectangularObject implements Serializable {
                 "y = " + getY() +
                 ", ax=" + ax +
                 ", ay=" + ay +
-                ", actual_dx=" + actual_dx +
-                ", actual_dy=" + actual_dy +
+                ", actual_dx=" + xVelocity +
+                ", actual_dy=" + yVelocity +
                 ", prev_x=" + prev_x +
                 ", prev_y=" + prev_y +
                 ", a_pressed=" + a_pressed +
