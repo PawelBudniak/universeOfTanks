@@ -16,6 +16,10 @@ public class ForwardingTank implements Serializable {
         return tank.shoot(x, y);
     }
 
+    public Bullet shoot(int x, int y, boolean facingRight) {
+        return tank.shoot(x, y, facingRight);
+    }
+
     public boolean isOriginOf(Bullet b) {
         return tank.isOriginOf(b);
     }

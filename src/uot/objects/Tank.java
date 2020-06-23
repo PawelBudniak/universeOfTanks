@@ -51,16 +51,28 @@ public class Tank extends RectangularObject implements Serializable {
     private boolean d_pressed;
     private boolean s_pressed;
 
-    public Bullet shoot(int x, int y){
+    /** if facingRight is true the bullet will appear on the right side of the tank, if it's false, it will appear on the left side
+     *  the bullet always appears in the middle height-wise */
+    public Bullet shoot(int x, int y, boolean facingRight){
+        if (x < 0 || y < 0)
+            throw new IllegalArgumentException("Coordinates must be positive integers");
+
+        final int SHIFT = 5;
+
         if (ammoLeft > 0) {
             --ammoLeft;
             reloadTimer.restart();
-            return new Bullet(getX(), getY(), x, y, this);
+            if (facingRight)
+                return new Bullet(getX() + getWidth()-SHIFT, getY()+getHeight()/2, x, y, this);
+            else
+                return new Bullet(getX() +SHIFT, getY()+getHeight()/2, x, y, this);
         }
         else {
             return null;
         }
     }
+
+    public Bullet shoot(int x, int y){ return shoot(x,y, true); }
 
     public boolean isOriginOf(Bullet b){
         return b.getOrigin() == this;

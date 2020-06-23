@@ -10,6 +10,7 @@ public class Bullet extends RectangularObject implements Serializable {
     private static final int HEIGHT = 5;
     private static final int SPEED = 5;
     private static final long serialVersionUID = 1397659479066755887L;
+    private final double dmg = 15;
 
     private double exactX;
     private double exactY;
@@ -35,10 +36,7 @@ public class Bullet extends RectangularObject implements Serializable {
         exactY = startY;
     }
 
-    public double getDmg()
-    {
-        return Math.random()*20+10;//20 - max dmg , 10 - min dmg
-    }
+    public double getDmg() { return dmg; }
 
     public void move()
     {

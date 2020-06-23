@@ -113,7 +113,7 @@ public class Game extends AbstractEngine{
             player2.setS_pressed(packet.isS_pressed());
 
             if (packet.isMouseInputValid()){
-                Bullet bullet = player2.shoot(packet.getMouseX(), packet.getMouseY());
+                Bullet bullet = player2.shoot(packet.getMouseX(), packet.getMouseY(), false);
                 if (bullet != null)
                     bullets.add(bullet);
             }
@@ -275,12 +275,12 @@ public class Game extends AbstractEngine{
         @Override
         public void mouseReleased(MouseEvent mouseEvent) {
             if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
-                Bullet new_bullet = players[this_player].shoot(mouseEvent.getX(), mouseEvent.getY());
+                Bullet new_bullet = players[this_player].shoot(mouseEvent.getX(), mouseEvent.getY(), true);
                 if (new_bullet != null)
                     bullets.add(new_bullet);
             }
             else if (mouseEvent.getButton() == MouseEvent.BUTTON3){
-                Bullet new_bullet = players[(this_player + 1)% 2].shoot(mouseEvent.getX(), mouseEvent.getY());
+                Bullet new_bullet = players[(this_player + 1)% 2].shoot(mouseEvent.getX(), mouseEvent.getY(), false);
                 if (new_bullet != null)
                     bullets.add(new_bullet);
             }
