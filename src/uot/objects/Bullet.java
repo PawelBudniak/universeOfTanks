@@ -5,7 +5,6 @@ import java.io.Serializable;
 
 public class Bullet extends RectangularObject implements Serializable {
 
-    public static final Color DEFAULT_COLOR = Color.red;
     private static final int WIDTH = 5;
     private static final int HEIGHT = 5;
     private static final double DEFAULT_SPEED = 5.0;

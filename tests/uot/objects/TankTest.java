@@ -170,7 +170,6 @@ class TankTest  {
         tank1.setS_pressed(false);
         for (int i =0; i < n_loop; ++i) {
             tank1.move();
-            System.out.println(tank1.getYVelocity());
         }
         assertTrue(tank1.getYVelocity() < EPSILON, "Velocity eventually should get very close to 0 due to friction");
 

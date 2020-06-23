@@ -64,9 +64,6 @@ public class Client extends AbstractEngine{
 
     private Timer networkClock;
 
-    private final int this_player = 1;
-    private final int other_player = 0;
-
 
 
 

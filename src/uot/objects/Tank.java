@@ -161,8 +161,6 @@ public class Tank extends RectangularObject implements Serializable {
         if (!bouncedLastTick && bounceLockCounter < BOUNCE_LOCK_LIMIT) {
             xVelocity = getNextDx();
             yVelocity = getNextDy();
-            if (bounceLockCounter >= 10)
-                System.out.println(bounceLockCounter);
             bounceLockCounter = 0;
         }
         else
