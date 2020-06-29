@@ -47,7 +47,7 @@ public class Main {
             JFrame frame = new GameFrame(game.getDisplay());
             frame.setVisible(true);
 
-            while (!game.isOver()){
+            while (!game.isNetworkingStopped() && !game.isOver()){
                 ;
             }
         } catch (IOException e) {

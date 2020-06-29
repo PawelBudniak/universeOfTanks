@@ -43,6 +43,8 @@ public abstract class AbstractEngine {
     JProgressBar p1HealthBar;
     JProgressBar p2HealthBar;
 
+    private Thread networkThread;
+
 
     public AbstractEngine() {
         p1HealthBar = new JProgressBar(0,0);
@@ -80,6 +82,34 @@ public abstract class AbstractEngine {
         i = new ImageIcon(BACKGROUND_PATH);
         BACKGROUND_IMG = i.getImage();
 
+    }
+
+    protected abstract void sendPacket();
+    protected abstract void receivePacket();
+
+    protected void stopNetworking(){
+        networkThread.interrupt();
+    }
+
+
+    protected void initNetworking(int tick){
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (!Thread.currentThread().isInterrupted()) {
+                        sendPacket();
+                        receivePacket();
+                        Thread.sleep(tick);
+                    }
+                }
+                catch (InterruptedException e){
+                    Thread.currentThread().interrupt();
+                }
+            }
+        };
+        networkThread = new Thread(r);
+        networkThread.start();
     }
 
     private void cleanBoard(){

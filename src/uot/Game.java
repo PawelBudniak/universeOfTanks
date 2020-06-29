@@ -16,7 +16,7 @@ public class Game extends AbstractEngine{
     private static final int START_X = 80;
 
     static final int TICK = 15;
-    static final int NET_TICK = 25;
+    static final int NET_TICK = 15;
 
     public static final int N_TERRAIN_BLOCKS = 8;
     private Timer networkClock;
@@ -26,6 +26,7 @@ public class Game extends AbstractEngine{
     private int other_player = 1;
     private ObjectOutputStream out;
     private ObjectInputStream in;
+    private boolean networkingStopped = false;
 
 
     public Game(String p1_nick, String p2_nick, boolean online){
@@ -52,17 +53,23 @@ public class Game extends AbstractEngine{
         this(p1_nick, p2_nick, true);
         this.in = in;
         this.out = out;
-        networkClock = new Timer(NET_TICK, (ActionEvent) -> {
-            sendPacket();
-            receivePacket();
-        });
+//        networkClock = new Timer(NET_TICK, (ActionEvent) -> {
+//            sendPacket();
+//            receivePacket();
+//        });
         sendBoard();
 
     }
 
-    void connectionLost(){
+    @Override
+    protected void stopNetworking(){
+        super.stopNetworking();
+        networkingStopped = true;
+    }
+
+    private void connectionLost(){
         connectionLost = true;
-        networkClock.stop();
+        stopNetworking();
     }
 
 
@@ -75,8 +82,9 @@ public class Game extends AbstractEngine{
         } catch (IOException e){
             connectionLost();
         }
+        initNetworking(NET_TICK);
         gameClock.start();
-        networkClock.start();
+//        networkClock.start();
     }
 
 
@@ -96,7 +104,8 @@ public class Game extends AbstractEngine{
             out.flush();
             if (isOver) {
                 System.out.println("GAME OVER SENT");
-                networkClock.stop();
+                stopNetworking();
+                //networkClock.stop();
             }
             //out.reset();
         }catch (IOException e){
@@ -147,7 +156,10 @@ public class Game extends AbstractEngine{
 
 
     public boolean isOver() {
-        return isOver && (networkClock == null || !networkClock.isRunning());
+        return isOver;
+    }
+    public boolean isNetworkingStopped(){
+        return networkingStopped;
     }
 
     private class GameClock implements ActionListener{

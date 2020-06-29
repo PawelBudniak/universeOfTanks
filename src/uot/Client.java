@@ -76,10 +76,10 @@ public class Client extends AbstractEngine{
         display.addMouseListener(new MouseHandler());
         setMaxHealth((int)TANK_HEALTH, (int)TANK_HEALTH);
         gameClock = new Timer(Game.TICK, new Clock());
-        networkClock = new Timer (Game.NET_TICK, (ActionEvent) -> {
-            sendPacket();
-            receivePacket();
-        });
+//        networkClock = new Timer (Game.NET_TICK, (ActionEvent) -> {
+//            sendPacket();
+//            receivePacket();
+//        });
         receiveBoard();
     }
 
@@ -91,7 +91,8 @@ public class Client extends AbstractEngine{
 
     void connectionLost(){
         connectionLost = true;
-        networkClock.stop();
+        stopNetworking();
+        //networkClock.stop();
     }
 
 
@@ -105,7 +106,8 @@ public class Client extends AbstractEngine{
             connectionLost();
         }
         gameClock.start();
-        networkClock.start();
+        initNetworking(Game.NET_TICK);
+//        networkClock.start();
 
     }
 
@@ -123,7 +125,7 @@ public class Client extends AbstractEngine{
     }
 
     private void gameOver(){
-        networkClock.stop();
+        stopNetworking();
     }
 
 
