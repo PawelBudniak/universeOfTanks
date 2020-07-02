@@ -59,7 +59,7 @@ public class Tank extends RectangularObject implements Serializable {
      *  the bullet always appears in the middle height-wise */
     public Bullet shoot(int x, int y, boolean facingRight){
         if (x < 0 || y < 0)
-            throw new IllegalArgumentException("Coordinates must be positive integers");
+            throw new IllegalArgumentException("Coordinates must be positive integers. Coordinates passed: x = " + x + " y = " + y);
 
         final int SHIFT = 5;
 

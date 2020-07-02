@@ -8,13 +8,15 @@ import java.awt.*;
 import java.util.List;
 
 public abstract class AbstractEngine {
-    static final String TANK1_PATH = "src/uot/objects/images/blue tank.png";
-    static final String TANK2_PATH = "src/uot/objects/images/red tank.png";
-    static final String BL_PATH = "src/uot/objects/images/bullet.png";
-    static final String ROCK_PATH = "src/uot/objects/images/rock.png";
-    static final String HORIZ_PATH = "src/uot/objects/images/horizontal wall.png";
-    static final String SIDE_PATH = "src/uot/objects/images/side wall.png";
-    static final String BACKGROUND_PATH = "src/uot/objects/images/ground2.png";
+    private static final String IMG_LOCATION = "resources/images/";
+    static final String TANK1_PATH = IMG_LOCATION + "blue tank.png";
+    static final String TANK2_PATH = IMG_LOCATION + "red tank.png";
+    static final String BL_PATH = IMG_LOCATION + "bullet.png";
+    static final String ROCK_PATH = IMG_LOCATION + "rock.png";
+    static final String HORIZ_PATH = IMG_LOCATION + "horizontal wall.png";
+    static final String SIDE_PATH = IMG_LOCATION + "side wall.png";
+    static final String BACKGROUND_PATH = IMG_LOCATION + "ground2.png";
+
     static final int BOARD_WIDTH = 500;
     static final int BOARD_LENGTH = 500;
     private static final int HEALTH_BAR_HEIGHT = 8;
@@ -32,13 +34,13 @@ public abstract class AbstractEngine {
     protected static final Image SIDE_IMG;
     protected static final Image BACKGROUND_IMG;
 
-    protected static final double TANK_HEALTH = 300;
+    protected static final double TANK_HEALTH = 30;
 
     protected List<Terrain> terrain;
     protected Timer gameClock;
     protected Display display;
-    protected boolean isOver;
-    protected boolean connectionLost;
+    protected volatile boolean isOver;
+    protected volatile boolean connectionLost;
     String winner;
     JProgressBar p1HealthBar;
     JProgressBar p2HealthBar;
@@ -90,6 +92,7 @@ public abstract class AbstractEngine {
     protected void stopNetworking(){
         networkThread.interrupt();
     }
+    protected boolean isNetworkingAlive(){ return networkThread.isAlive(); }
 
 
     protected void initNetworking(int tick){

@@ -10,8 +10,12 @@ import java.awt.event.*;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.concurrent.CountDownLatch;
 
 public class Client extends AbstractEngine{
+    public static Object over = new Object();
+    private static CountDownLatch finished = new CountDownLatch(1);
+
 
     public static void main(String[] args) {
 
@@ -28,9 +32,7 @@ public class Client extends AbstractEngine{
             Client client = new Client(out, in);
             JFrame frame = new GameFrame(client.getDisplay());
             frame.setVisible(true);
-            while (!client.isGameOver()){
-                ;
-            }
+            finished.await();
 
         } catch (UnknownHostException e) {
             System.err.println("Unkown host");
@@ -40,6 +42,10 @@ public class Client extends AbstractEngine{
             System.err.println("I/O error");
             System.exit(1);
         }
+        catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        System.out.println("Client wyszedl");
     }
 
 
@@ -120,11 +126,14 @@ public class Client extends AbstractEngine{
             out.flush();
             //out.reset();
         }catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("send");
             connectionLost();
         }
     }
 
     private void gameOver(){
+        finished.countDown();
         stopNetworking();
     }
 
@@ -132,21 +141,24 @@ public class Client extends AbstractEngine{
     public void receivePacket(){
         try {
             ServerPacket received = (ServerPacket) in.readObject();
+            isOver = received.isGameOver();
+            if (isOver) {
+                System.out.println("OVER");
+                display.repaint();
+                gameOver();
+            }
             bullets = received.getBullets();
             serverTankX = received.getServerTankX();
             serverTankY = received.getServerTankY();
             clientTankX = received.getClientTankX();
             clientTankY = received.getClientTankY();
             winner = received.getWinner();
-            isOver = received.isGameOver();
             clientHealth = received.getClientHealth();
             serverHealth = received.getServerHealth();
-            if (isOver) {
-                display.repaint();
-                gameOver();
-            }
 
         }catch (IOException | ClassNotFoundException e){
+            e.printStackTrace();
+            System.out.println("rece");
             connectionLost();
         }
 

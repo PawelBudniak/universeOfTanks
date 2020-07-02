@@ -13,4 +13,14 @@ public class GameFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     }
+    public void switchPanel(JPanel oldPanel, JPanel newPanel){
+        this.getContentPane().remove(oldPanel);
+        this.getContentPane().add(newPanel);
+        this.invalidate();
+        this.validate();
+        this.pack();
+        this.setLocationRelativeTo(null);
+        this.getContentPane().repaint();
+
+    }
 }

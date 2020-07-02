@@ -1,6 +1,7 @@
 package uot;
 
 import uot.objects.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -19,7 +20,6 @@ public class Game extends AbstractEngine{
     static final int NET_TICK = 15;
 
     public static final int N_TERRAIN_BLOCKS = 8;
-    private Timer networkClock;
     private LinkedList<Bullet> bullets;
     private Player[] players;
     private int this_player = 0;
@@ -27,6 +27,7 @@ public class Game extends AbstractEngine{
     private ObjectOutputStream out;
     private ObjectInputStream in;
     private boolean networkingStopped = false;
+    private volatile boolean gameOverSent = false;
 
 
     public Game(String p1_nick, String p2_nick, boolean online){
@@ -91,20 +92,40 @@ public class Game extends AbstractEngine{
     public void sendPacket(){
         Player p1 = players[this_player];
         Player p2 = players[other_player];
-        LinkedList<Coordinates> coords = new LinkedList<>();
-        bullets.forEach(bullet -> coords.add(new Coordinates(bullet.getX(), bullet.getY())));
+        LinkedList<Coordinates> bulletCoords = new LinkedList<>();
+        bullets.forEach(bullet -> bulletCoords.add(new Coordinates(bullet.getX(), bullet.getY())));
+        boolean currentlyOver = isOver;
+        // use the local copy, so we can later check if a "Game Over" message was sent,
+        // without worrying if the gamestate will change between sending and checking
         ServerPacket packet = new ServerPacket(
                 p1.getX(), p1.getY(),
                 p2.getX(), p2.getY(),
-                coords, isOver, winner,
+                bulletCoords, currentlyOver, winner,
                 p1.getHealthLeft(), p2.getHealthLeft());
 
+        String sPacket = packet.toString();
         try{
             out.writeObject(packet);
             out.flush();
-            if (isOver) {
+            if (currentlyOver) {
+                System.out.println(sPacket);
                 System.out.println("GAME OVER SENT");
+                // wait some time so that the gameOver packet will have time to get delivered before closing the socket
+                try {
+                    Thread.sleep(300);
+                }catch(InterruptedException e){
+                    Thread.currentThread().interrupt();
+                }
                 stopNetworking();
+//                synchronized (Main.over) {
+//                    gameOverSent = true;
+//                    Main.over.notify();
+//                }
+                gameOverSent = true;
+                // notify main thread that the information about game being over has been sent
+                Main.finished.countDown();
+
+
                 //networkClock.stop();
             }
             //out.reset();
@@ -155,11 +176,12 @@ public class Game extends AbstractEngine{
     }
 
 
+    public boolean wasGameOverSent(){ return gameOverSent; }
     public boolean isOver() {
         return isOver;
     }
     public boolean isNetworkingStopped(){
-        return networkingStopped;
+        return isNetworkingAlive();
     }
 
     private class GameClock implements ActionListener{
