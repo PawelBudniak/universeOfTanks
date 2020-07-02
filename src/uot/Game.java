@@ -9,6 +9,8 @@ import java.io.*;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 public class Game extends AbstractEngine{
@@ -20,7 +22,7 @@ public class Game extends AbstractEngine{
     static final int NET_TICK = 15;
 
     public static final int N_TERRAIN_BLOCKS = 8;
-    private LinkedList<Bullet> bullets;
+    private Queue<Bullet> bullets;
     private Player[] players;
     private int this_player = 0;
     private int other_player = 1;
@@ -33,7 +35,7 @@ public class Game extends AbstractEngine{
     public Game(String p1_nick, String p2_nick, boolean online){
         super();
         this.terrain = new LinkedList<>();
-        this.bullets = new LinkedList<>();
+        this.bullets = new ConcurrentLinkedQueue<>();
         this.winner = null;
         players = new Player[2];
         players[0] = new Player(p1_nick,
@@ -75,7 +77,7 @@ public class Game extends AbstractEngine{
 
 
     public void sendBoard() {
-        BoardPacket packet = new BoardPacket(players, bullets, terrain);
+        BoardPacket packet = new BoardPacket(terrain);
         try{
             out.writeObject(packet);
             out.flush();
