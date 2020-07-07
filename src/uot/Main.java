@@ -1,11 +1,8 @@
 package uot;
-import uot.objects.*;
 
 import javax.swing.*;
 import java.awt.*;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.*;
 import java.io.*;
 import java.util.concurrent.CountDownLatch;
@@ -50,6 +47,21 @@ public class Main {
     private static void multiPlayer() {
         final int port = 4445;
 
+        JPanel waitingPanel = new JPanel() {
+            {
+                setPreferredSize(new Dimension(Game.BOARD_WIDTH, Game.BOARD_LENGTH));
+            }
+            @Override
+            public void paint(Graphics g){
+                AbstractEngine.drawMsg(g, "Waiting for other player...", this);
+            }
+        };
+
+        EventQueue.invokeLater(() ->
+            frame.switchPanel(option, waitingPanel)
+        );
+
+
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -65,10 +77,18 @@ public class Main {
 
                     Game game = new Game("Seba", "laptok", out, in);
                     EventQueue.invokeLater(() ->
-                            frame.switchPanel(option, game.getDisplay()
+                            frame.switchPanel(waitingPanel, game.getDisplay()
                     ));
 
                     finished.await();
+
+                    // wait some time so that the gameOver packet will have time to get delivered before closing the socket
+                    try {
+                        Thread.sleep(300);
+                    }catch(InterruptedException e){
+                        Thread.currentThread().interrupt();
+                    }
+                    game.stopNetworking();
 
                 } catch (IOException e) {
                     System.out.println("Exception caught when trying to listen on port "
@@ -96,19 +116,8 @@ public class Main {
             button1 = new JButton("Single Player");
             button2 = new JButton("Multi Player");
 
-            button1.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    singlePlayer();
-
-                }
-            });
-            button2.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    multiPlayer();
-                }
-            });
+            button1.addActionListener(e -> singlePlayer());
+            button2.addActionListener(e -> multiPlayer());
 
             add(button1);
             add(button2);

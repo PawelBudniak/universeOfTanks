@@ -126,19 +126,19 @@ public abstract class AbstractEngine {
         return display;
     }
 
-    private void drawMsg(Graphics g, String msg){
-        Font font = new Font("MS Gothic",Font.BOLD, 35);
-        FontMetrics metrics =  getDisplay().getFontMetrics(font);
+    public static void drawMsg(Graphics g, String msg, JPanel panel){
+        Font font = new Font("MS Gothic",Font.BOLD, 30);
+        FontMetrics metrics =  panel.getFontMetrics(font);
 
         g.setColor(Color.pink);
         g.setFont(font);
-        g.drawString(msg,(Game.BOARD_WIDTH-metrics.stringWidth(msg))/2,Game.BOARD_LENGTH/2);
+        g.drawString(msg,(panel.getWidth()-metrics.stringWidth(msg))/2,panel.getHeight()/2);
     }
 
     protected void drawConnectionLost(Graphics g){
         gameClock.stop();
         cleanBoard();
-        drawMsg(g, "Connection Lost");
+        drawMsg(g, "Connection Lost" , getDisplay());
     }
 
     protected void drawTerrain(Graphics g){
@@ -164,7 +164,7 @@ public abstract class AbstractEngine {
     protected void drawGameOver(Graphics g){
         gameClock.stop();
         cleanBoard();
-        drawMsg(g, winner + " wins");
+        drawMsg(g, winner + " wins", getDisplay());
 
     }
 

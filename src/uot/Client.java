@@ -5,6 +5,7 @@ import uot.objects.Terrain;
 import javax.swing.*;
 import java.awt.*;
 import java.net.SocketException;
+import java.util.LinkedList;
 import java.util.List;
 import java.awt.event.*;
 import java.io.*;
@@ -13,7 +14,6 @@ import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 
 public class Client extends AbstractEngine{
-    public static Object over = new Object();
     private static CountDownLatch finished = new CountDownLatch(1);
 
 
@@ -86,6 +86,7 @@ public class Client extends AbstractEngine{
 //            sendPacket();
 //            receivePacket();
 //        });
+        bullets = new LinkedList<>(); // to avoid NullPointerException in 1st synchronized(bullets)
         receiveBoard();
     }
 
@@ -100,7 +101,6 @@ public class Client extends AbstractEngine{
         stopNetworking();
         //networkClock.stop();
     }
-
 
     public void receiveBoard(){
         try {
@@ -127,7 +127,6 @@ public class Client extends AbstractEngine{
             //out.reset();
         }catch (IOException e) {
             e.printStackTrace();
-            System.out.println("send");
             connectionLost();
         }
     }
@@ -141,24 +140,27 @@ public class Client extends AbstractEngine{
     public void receivePacket(){
         try {
             ServerPacket received = (ServerPacket) in.readObject();
-            isOver = received.isGameOver();
-            if (isOver) {
-                System.out.println("OVER");
-                display.repaint();
-                gameOver();
-            }
-            bullets = received.getBullets();
-            serverTankX = received.getServerTankX();
-            serverTankY = received.getServerTankY();
-            clientTankX = received.getClientTankX();
-            clientTankY = received.getClientTankY();
-            winner = received.getWinner();
-            clientHealth = received.getClientHealth();
-            serverHealth = received.getServerHealth();
+            EventQueue.invokeLater( () -> {
+                isOver = received.isGameOver();
+                if (isOver) {
+                    System.out.println("OVER");
+                    display.repaint();
+                    gameOver();
+                }
+                synchronized (bullets) {
+                    bullets = received.getBullets();
+                }
+                serverTankX = received.getServerTankX();
+                serverTankY = received.getServerTankY();
+                clientTankX = received.getClientTankX();
+                clientTankY = received.getClientTankY();
+                winner = received.getWinner();
+                clientHealth = received.getClientHealth();
+                serverHealth = received.getServerHealth();
+            });
 
         }catch (IOException | ClassNotFoundException e){
             e.printStackTrace();
-            System.out.println("rece");
             connectionLost();
         }
 
@@ -182,8 +184,10 @@ public class Client extends AbstractEngine{
     @Override
     protected void drawBullets(Graphics g){
         Graphics2D g2 = (Graphics2D) g;
-        for (Coordinates bullet: bullets){
-            g2.drawImage(BULLET_IMG,bullet.getX(),bullet.getY(),getDisplay());
+        synchronized (bullets) {
+            for (Coordinates bullet : bullets) {
+                g2.drawImage(BULLET_IMG, bullet.getX(), bullet.getY(), getDisplay());
+            }
         }
     }
 
@@ -255,4 +259,5 @@ public class Client extends AbstractEngine{
         public void mouseExited(MouseEvent mouseEvent) {
         }
     }
+
 }

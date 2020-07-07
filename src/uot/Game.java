@@ -65,7 +65,7 @@ public class Game extends AbstractEngine{
     }
 
     @Override
-    protected void stopNetworking(){
+    public void stopNetworking(){
         super.stopNetworking();
         networkingStopped = true;
     }
@@ -98,7 +98,7 @@ public class Game extends AbstractEngine{
         bullets.forEach(bullet -> bulletCoords.add(new Coordinates(bullet.getX(), bullet.getY())));
         boolean currentlyOver = isOver;
         // use the local copy, so we can later check if a "Game Over" message was sent,
-        // without worrying if the gamestate will change between sending and checking
+        // without worrying if the gamestate will get change by another thread between sending and checking
         ServerPacket packet = new ServerPacket(
                 p1.getX(), p1.getY(),
                 p2.getX(), p2.getY(),
@@ -112,17 +112,6 @@ public class Game extends AbstractEngine{
             if (currentlyOver) {
                 System.out.println(sPacket);
                 System.out.println("GAME OVER SENT");
-                // wait some time so that the gameOver packet will have time to get delivered before closing the socket
-                try {
-                    Thread.sleep(300);
-                }catch(InterruptedException e){
-                    Thread.currentThread().interrupt();
-                }
-                stopNetworking();
-//                synchronized (Main.over) {
-//                    gameOverSent = true;
-//                    Main.over.notify();
-//                }
                 gameOverSent = true;
                 // notify main thread that the information about game being over has been sent
                 Main.finished.countDown();
@@ -139,16 +128,18 @@ public class Game extends AbstractEngine{
         try {
             ClientPacket packet = (ClientPacket) in.readObject();
             Player player2 = players[other_player];
-            player2.setW_pressed(packet.isW_pressed());
-            player2.setA_pressed(packet.isA_pressed());
-            player2.setD_pressed(packet.isD_pressed());
-            player2.setS_pressed(packet.isS_pressed());
+            EventQueue.invokeLater( ()-> {
+                player2.setW_pressed(packet.isW_pressed());
+                player2.setA_pressed(packet.isA_pressed());
+                player2.setD_pressed(packet.isD_pressed());
+                player2.setS_pressed(packet.isS_pressed());
 
-            if (packet.isMouseInputValid()){
-                Bullet bullet = player2.shoot(packet.getMouseX(), packet.getMouseY(), false);
-                if (bullet != null)
-                    bullets.add(bullet);
-            }
+                if (packet.isMouseInputValid()) {
+                    Bullet bullet = player2.shoot(packet.getMouseX(), packet.getMouseY(), false);
+                    if (bullet != null)
+                        bullets.add(bullet);
+                }
+            });
         }catch (IOException | ClassNotFoundException e){
             connectionLost();
         }
