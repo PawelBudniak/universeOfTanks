@@ -214,7 +214,6 @@ public class Game extends AbstractEngine{
 
                 for (Terrain block : terrain) {
                     if (bullet.collision(block)) {
-                        //System.out.println("bullet-terrain");
                         iBullet.remove();
                         break;
                     }
@@ -303,11 +302,6 @@ public class Game extends AbstractEngine{
         public void mouseReleased(MouseEvent mouseEvent) {
             if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
                 Bullet new_bullet = players[this_player].shoot(mouseEvent.getX(), mouseEvent.getY(), true);
-                if (new_bullet != null)
-                    bullets.add(new_bullet);
-            }
-            else if (mouseEvent.getButton() == MouseEvent.BUTTON3){
-                Bullet new_bullet = players[(this_player + 1)% 2].shoot(mouseEvent.getX(), mouseEvent.getY(), false);
                 if (new_bullet != null)
                     bullets.add(new_bullet);
             }

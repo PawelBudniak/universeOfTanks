@@ -22,15 +22,6 @@ public class Main {
             frame.setVisible(true);
         });
 
-
-//        System.out.println("Press 1 for testing in single player mode, press 2 for multiplayer");
-//        Scanner s = new Scanner(System.in);
-//        int choice = s.nextInt();
-//        if (choice == 1)
-//            singlePlayer();
-//        else if (choice == 2)
-//            multiPlayer();
-
     }
 
     private static void singlePlayer(){
@@ -75,7 +66,7 @@ public class Main {
                 ) {
                     clientSocket.setTcpNoDelay(true);
 
-                    Game game = new Game("Seba", "laptok", out, in);
+                    Game game = new Game("Player1", "Player2", out, in);
                     EventQueue.invokeLater(() ->
                             frame.switchPanel(waitingPanel, game.getDisplay()
                     ));
@@ -98,7 +89,6 @@ public class Main {
                 catch (InterruptedException e){
                     e.printStackTrace();
                 }
-                System.out.println("wuszedlem");
             }
         };
         Thread t = new Thread(r);
